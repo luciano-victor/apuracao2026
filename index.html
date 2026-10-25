@@ -36,7 +36,7 @@ header{display:flex;align-items:center;gap:18px;padding:12px 22px;border-bottom:
 @keyframes pulse{70%{box-shadow:0 0 0 8px rgba(124,242,200,0)}100%{box-shadow:0 0 0 0 rgba(124,242,200,0)}}
 /* main */
 main{position:relative;display:grid;grid-template-columns:330px minmax(0,1fr) 350px;gap:16px;padding:16px 22px;min-height:0}
-.col{display:flex;flex-direction:column;gap:14px;min-height:0;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+.col{display:flex;flex-direction:column;gap:14px;min-height:0;overflow:auto;scrollbar-width:none;scrollbar-color:var(--line2) transparent}
 .card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;position:relative}
 .card h3{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);font-weight:600;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
 .big{font-size:34px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
@@ -205,7 +205,12 @@ header{gap:12px;flex-wrap:nowrap}.brand{white-space:nowrap}.brand small{display:
 .ft .fl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ft .fl i,.dt{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}.ft .fl small{color:var(--tx3)}
 .ft.fx{display:none}#faltam.all .ft.fx{display:grid}
 .rg{padding:9px 0;border-bottom:1px solid var(--line)}.rg:last-of-type{border-bottom:0}
-.pixr{display:flex;gap:14px;align-items:center}.pixq{width:104px;height:104px;background:#fff;border-radius:10px;padding:7px;flex:none}
+.pixr{display:flex;gap:14px;align-items:center}.pixq{width:86px;height:86px;background:#fff;border-radius:10px;padding:7px;flex:none}
+.col::-webkit-scrollbar{width:0;height:0}
+.col.ovf{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 34px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 34px),transparent)}
+#colR{display:flex;flex-direction:column}#colR.lid #mainBox{order:-1}
+.rg2{display:grid;grid-template-columns:minmax(0,1fr) 92px 74px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:12px}.rg2:last-of-type{border-bottom:0}
+.rgz{cursor:pointer}.rgz:hover b{color:var(--acc)}.rg2 b{font-weight:600}.rg2 small{display:block;color:var(--tx3);font-size:10.5px}.rg2 .bar{height:7px}.rg2 .num{text-align:right;white-space:nowrap}
 .legend .lcap{flex-basis:100%;font-size:11px;color:var(--tx3);line-height:1.35;max-width:470px;margin-top:-2px}
 </style>
 </head>
@@ -234,7 +239,7 @@ header{gap:12px;flex-wrap:nowrap}.brand{white-space:nowrap}.brand small{display:
   </section>
   <section class="col r" id="colR"><div id="layerBox" class="stack"></div><div id="mainBox" class="stack"></div><div id="trendBox" class="stack"></div></section>
 </main>
-<footer><span>Fonte: TSE · resultados.tse.jus.br · malhas: IBGE. Dados em apuração oficial; podem sofrer retificação.</span><span class="cred">Desenvolvido por <b>Luciano Victor</b> com apoio de IA (Claude, Anthropic) · v. 6.3</span><span id="foot"></span><img src="https://hits.sh/luciano-victor.github.io/apuracao2026.svg" alt="" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></footer><!-- contador de acessos (v6.1): uma contagem por abertura da página; estatísticas em https://hits.sh/luciano-victor.github.io/apuracao2026/ -->
+<footer><span>Fonte: TSE · resultados.tse.jus.br · malhas: IBGE. Dados em apuração oficial; podem sofrer retificação.</span><span class="cred">Desenvolvido por <b>Luciano Victor</b> com apoio de IA (Claude, Anthropic) · v. 6.4</span><span id="foot"></span><img src="https://hits.sh/luciano-victor.github.io/apuracao2026.svg" alt="" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></footer><!-- contador de acessos (v6.1): uma contagem por abertura da página; estatísticas em https://hits.sh/luciano-victor.github.io/apuracao2026/ -->
 </div>
 <div class="tip" id="tip"></div>
 
@@ -438,6 +443,7 @@ async function render(fresh){
   if(S.uf==='br'){sw.style.display='flex';sw.innerHTML=[['map','Mapa'],['hex','Hexágonos']].map(([k,n])=>`<button data-k="${k}" class="${(k==='hex')===S.hex?'on':''}">${n}</button>`).join('');sw.querySelectorAll('button').forEach(b=>b.onclick=()=>{S.hex=b.dataset.k==='hex';render()})}
   else if(isProp(S.cargo)&&!['pxg','sim','desl','cand','virada'].includes(S.layer)){sw.style.display='flex';sw.innerHTML=['gov',S.cargo].map(k=>{const heavy=isProp(k)&&!AUTO_PROP.includes(S.uf);return `<button data-k="${k}" class="${k===S.mapCargo?'on':''}" title="${isProp(k)?'Candidato mais votado em cada município'+(heavy?' (carrega um arquivo por município, pode levar alguns minutos)':''):''}">${isProp(k)?'Candidato mais votado':'Partido do '+cargoNome(k,S.uf).toLowerCase()}${heavy?' (pesado)':''}</button>`}).join('');sw.querySelectorAll('button').forEach(b=>b.onclick=()=>{S.mapCargo=b.dataset.k;render()})}
   else sw.style.display='none';
+  $('colR').classList.toggle('lid',S.layer==='lider');
   if(fresh!==true){$('layerBox').innerHTML='';S.simBuilt=false}
   await Promise.allSettled([drawMap(tok,fresh),drawCards(tok,fresh)]);
   renderTrend();
@@ -679,7 +685,7 @@ function listRows(rows,fn){return `<div class="rk">${rows.map(fn).join('')}</div
 const rowU=(nome,val,sub)=>`<div class="it"><span class="pos"></span><span class="nm">${esc(nome)}</span><span class="pc">${val}</span><div class="vt">${sub}</div></div>`;
 async function layerBox(){
   const L=S.layer,box=$('layerBox');
-  if(L==='lider'&&S.uf==='br'&&S.cargo==='pres'){await projBox(box);if(S.layer!=='lider')return;box.insertAdjacentHTML('beforeend',faltamHtml()+regiaoHtml());bindFaltam();return}
+  if(L==='lider'&&S.uf==='br'&&S.cargo==='pres'){await projBox(box);if(S.layer!=='lider')return;box.insertAdjacentHTML('beforeend',regiaoHtml());{const z=$('rgz');if(z)z.onclick=()=>go({uf:'zz',mun:null,cargo:'pres'})}placeLeft('faltam',faltamHtml(),true);bindFaltam();return}
   if(L==='andamento'){andamentoBox(box);return}
   if(L==='cand'){candBox(box);return}
   if(L==='desl'){deslBox(box);return}
@@ -769,8 +775,8 @@ async function drawCards(tok,fresh){
     if(S.uf==='br'&&S.cargo!=='pres'){await cardsNational(tok,fresh);if(tok===S.tok)addPix();return}
     const d=S.uf==='br'?await getJ(brpres(),fresh):(S.mun?await getMun(S.uf,S.mun,S.cargo,fresh):await getUF(S.uf,S.cargo,fresh));
     if(tok!==S.tok)return;
-    cardsFor(d);addPix();
-    if(S.uf==='br'&&S.cargo==='pres')extCard(tok,fresh);
+    cardsFor(d);addPix();if(!(S.uf==='br'&&S.cargo==='pres'))placeLeft('faltam','');
+    if(S.uf==='br'&&S.cargo==='pres')getUF('zz','pres',fresh).catch(()=>{});
   }catch(e){
     if(tok!==S.tok)return;
     $('dot').classList.add('err');
@@ -788,13 +794,13 @@ function leftCards(title,scope,s,e,v){
     <div class="ring" style="--p:${s.p}"><span>${Math.round(s.p)}%</span></div></div></div>
   <div class="card"><h3><span>Comparecimento</span><span class="num">${fmt(e.te)} eleitores</span></h3>
     <div class="bar" style="margin-bottom:12px"><i style="width:${e.pc}%;background:var(--acc)"></i><i style="width:${e.pa}%;background:#3a4560"></i></div>
-    <div class="kv"><div class="l"><span>Comparecimento</span><b class="num">${fmt(e.c)} · ${pc(e.pc)}</b></div><div class="l"><span>Abstenção</span><b class="num">${fmt(e.a)} · ${pc(e.pa)}</b></div></div></div>
-  <div class="card"><h3><span>Composição dos votos</span><span class="num">${fmt(v.tv)}</span></h3>
+    <div class="kv"><div class="l"><span>Comparecimento</span><b class="num">${fmt(e.c)} · ${pc(e.pc)}</b></div><div class="l"><span>Abstenção</span><b class="num">${fmt(e.a)} · ${pc(e.pa)}</b></div></div>
+  <div id="compc" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><h3><span>Composição dos votos</span><span class="num">${fmt(v.tv)}</span></h3>
     <div class="bar" style="margin-bottom:12px"><i style="width:${v.vv/(v.tv||1)*100}%;background:#4f8cff"></i><i style="width:${v.vb/(v.tv||1)*100}%;background:#cbd5e8"></i><i style="width:${v.vn/(v.tv||1)*100}%;background:#ff5d6c"></i></div>
     <div class="kv">
      <div class="l"><span>Válidos</span><b class="num">${fmt(v.vv)} · ${pc(v.vv/(v.tv||1)*100)}</b></div>
      <div class="l"><span>Brancos</span><b class="num">${fmt(v.vb)} · ${pc(v.vb/(v.tv||1)*100)}</b></div>
-     <div class="l"><span>Nulos</span><b class="num">${fmt(v.vn)} · ${pc(v.vn/(v.tv||1)*100)}</b></div></div></div>`;
+     <div class="l"><span>Nulos</span><b class="num">${fmt(v.vn)} · ${pc(v.vn/(v.tv||1)*100)}</b></div></div></div></div>`;
 }
 const partyList=(title,ps,fmtv,sub)=>{const mp=Math.max(...ps.map(x=>x.p),1);return `<div class="card"><h3><span>${title}</span><span>${sub||''}</span></h3><div class="rk">${ps.map(x=>`<div class="it"><span class="pos"></span><span class="nm">${esc(x.sg)}</span><span class="pc">${fmtv(x)}</span><div class="b">${bar(x.p,mp,x.sg)}</div></div>`).join('')}</div></div>`};
 function effCard(pv,seats,vagas){
@@ -819,6 +825,8 @@ function cardsFor(d){
   const zero=!(lead&&lead.v>0);
   if(maj&&lead&&zero){
     hero=`<div class="card"><h3><span>Liderança</span><span>${vagas?vagas+(vagas>1?' vagas':' vaga'):''}</span></h3><div class="sm" style="line-height:1.5">Ainda não há votos apurados${S.turn===2?' no 2º turno':''}. A liderança aparece com a primeira atualização do TSE após o início da apuração.</div></div>`;
+  }else if(maj&&lead&&cs.length===2&&sg2){
+    hero=`<div class="card"><h3><span>Liderança</span><span>${vagas?vagas+(vagas>1?' vagas':' vaga'):''}</span></h3><div class="row sm"><span><i class="dt" style="background:${colorOf(lead.sg)}"></i><b>${esc(lead.nm)}</b> à frente${stTxt(lead)?' · eleito':''}</span><b class="num">${fmt(lead.v-sg2.v)} votos · ${(lead.p-sg2.p).toFixed(2).replace('.',',')} p.p.</b></div></div>`;
   }else if(maj&&lead){
     hero=`<div class="card"><h3><span>Liderança</span><span>${vagas?vagas+(vagas>1?' vagas':' vaga'):''}</span></h3>
     <div class="hero"><div class="av" style="background:${colorOf(lead.sg)}"><span>${esc(ini(lead.nm))}</span>${img(S.cargo,S.uf,lead.sq,'avi')}</div>
@@ -836,17 +844,17 @@ function cardsFor(d){
   }
   let pset=null;if(!S.mun&&(!maj||S.cargo==='sen')){pset=mkSet(cs.filter(x=>x.e).map(x=>({...x,uf:S.uf})),vagas,S.cargo==='sen'?1:0);setParlCur(S.uf,S.cargo,pset);$('colL').insertAdjacentHTML('beforeend',parlMini(pset));bindParlMini()}
   const maxp=Math.max(...top.map(x=>x.p),1);
-  const list=`<div class="card"><h3><span>${maj?'Candidatos':'Candidatos mais votados'}</span><span>${maj?cs.length+' · ':''}clique para ver no mapa</span></h3><div class="rk">${top.map((x,i)=>`
+  const list=`<div class="card"><h3><span>${maj?'Candidatos':'Candidatos mais votados'}</span><span>${maj&&cs.length>2?cs.length+' · ':''}ver no mapa</span></h3><div class="rk">${top.map((x,i)=>`
    <div class="it click" data-i="${i}"><span class="pos">${i+1}</span><span class="nm">${maj?img(S.cargo,S.uf,x.sq,'ph'):''}${esc(x.nm)}<small>${esc(x.sg)}</small></span><span class="pc">${pc(x.p)}</span>
-   <div class="b">${bar(x.p,maxp,x.sg)}</div><div class="vt">${fmt(x.v)} votos ${x.e?'· <b style="color:var(--acc)">eleito</b>':/2º/.test(x.st)?'· <b style="color:var(--warn)">2º turno</b>':''}</div></div>`).join('')}</div><input class="lsrch" id="lq" placeholder="Buscar outro candidato nesta lista${maj?'':' (40 mais votados e eleitos)'}"><div id="lres" class="rk"></div></div>`;
+   <div class="b">${bar(x.p,maxp,x.sg)}</div><div class="vt">${fmt(x.v)} votos ${x.e?'· <b style="color:var(--acc)">eleito</b>':/2º/.test(x.st)?'· <b style="color:var(--warn)">2º turno</b>':''}</div></div>`).join('')}</div>${cs.length>top.length?`<input class="lsrch" id="lq" placeholder="Buscar outro candidato nesta lista${maj?'':' (40 mais votados e eleitos)'}"><div id="lres" class="rk"></div>`:''}</div>`;
   const done=S.turn===2&&S.cargo==='gov'&&govDone(S.uf);
   const aviso=done?`<div class="card" style="border-color:rgba(124,242,200,.45)"><h3><span>Eleição definida no 1º turno</span><span>sem 2º turno</span></h3><div class="sm" style="line-height:1.5">${esc(UFS[S.uf][0])} elegeu o governador em 4 de outubro de 2026. Os números, o mapa e as camadas desta visão são do 1º turno.</div></div>`:'';
   const decide=S.turn===2&&!S.mun&&((S.cargo==='pres'&&S.uf==='br')||(S.cargo==='gov'&&S.uf!=='br'&&S.uf!=='zz'));
   if(maj&&lead&&!done&&vagas<=1&&decide)hero=hero.replace(/<\/div>$/,vantagemCard(d,cs)+'</div>');
-  $('mainBox').innerHTML=aviso+hero+(maj?list:parts+list);
+  $('mainBox').innerHTML=aviso+(maj?list+hero:hero+parts+list);
   {const s0=sec(d),t2=cs.slice(0,maj?2:3).map(x=>`${x.nm} (${x.sg}) ${pc(x.p,1)}`).join(' × ');S.sumTxt=`${cargoNome(S.cargo,S.uf)} · ${scope}${S.turn===2?(done?' · definido no 1º turno':' · 2º turno'):''}: ${t2}. ${pc(s0.p,1)} das seções apuradas (TSE, ${d.dg} ${d.hg}).`}
   $('mainBox').querySelectorAll('.it.click[data-i]').forEach(el=>el.onclick=()=>pickCand({...top[+el.dataset.i],cg:S.cargo,uf:S.uf}));bindListSearch(cs,S.cargo,S.uf);
-  if(cs.length>1){rec(d,cs);$('mainBox').insertAdjacentHTML('beforeend',serieCard())}
+  if(cs.length>1)rec(d,cs);
   S.names=top.slice(0,3).map(x=>x.nm);
   stamp(d);
 }
@@ -896,6 +904,8 @@ async function extCard(tok,fresh){
     <div class="mut sm" style="margin-top:8px">${pc(s.p,1)} das seções apuradas · ${fmt(e.te)} eleitores. Os votos do exterior já estão no total do Brasil.</div></div>`;
     $('colL').insertAdjacentHTML('beforeend',h);$('extc').onclick=()=>go({uf:'zz',mun:null,cargo:'pres'})}catch(e){}
 }
+function updOvf(){for(const c of document.querySelectorAll('.col')){const more=c.scrollHeight>c.clientHeight+4&&c.scrollTop+c.clientHeight<c.scrollHeight-6;c.classList.toggle('ovf',more&&innerWidth>1100)}}
+document.querySelectorAll('.col').forEach(c=>c.addEventListener('scroll',updOvf,{passive:true}));addEventListener('resize',updOvf);setInterval(updOvf,1000);
 function stamp(d){if(!d)return;$('stamp').title='';const z=!N(d.s?.st);const el=$('stamp');el.textContent=z?`${S.turn===2?'2º turno · ':''}aguardando apuração`:`TSE ${String(d.dg||'').slice(0,5)} ${d.hg}`;el.title=z?'':`Totalização do TSE em ${d.dg} às ${d.hg}`;$('dot').classList.remove('err')}
 
 /* ===== buscas (Google Trends removido na v5.3) ===== */
@@ -1109,23 +1119,31 @@ function faltamHtml(){
   const T=rows.reduce((x,r)=>x+r.rest,0);if(T<=0)return '';
   const bd=cache.get(brpres())?.d,bs=bd?sec(bd):null,TS=bs?bs.ts-bs.st:rows.reduce((x,r)=>x+r.ts,0),TE=bd?(N(bd.e?.esnt)||T):T;
   rows.sort((x,y)=>y.rest-x.rest);
-  const tr=(r,i)=>`<div class="ft${i>=10?' fx':''}"><span class="fn">${esc(r.nome)}</span><span class="num">${fmtMi(r.rest)}</span><span class="num">${pc(r.rest/T*100,1)}</span><span class="fl">${r.lead?`<i style="background:${colorOf(r.lead.sg)}"></i>${esc(r.lead.nm.split(' ')[0])} ${pc(r.lead.p,1)} <small>+${r.lead.mg.toFixed(1).replace('.',',')}</small>`:'<span class="mut">sem votos</span>'}</span></div>`;
+  const tr=(r,i)=>`<div class="ft${i>=6?' fx':''}"><span class="fn">${esc(r.nome)}</span><span class="num">${fmtMi(r.rest)}</span><span class="num">${pc(r.rest/T*100,1)}</span><span class="fl">${r.lead?`<i style="background:${colorOf(r.lead.sg)}"></i>${esc(r.lead.nm.split(' ')[0])} ${pc(r.lead.p,1)} <small>+${r.lead.mg.toFixed(1).replace('.',',')}</small>`:'<span class="mut">sem votos</span>'}</span></div>`;
   return `<div class="card" id="faltam"><h3><span>Quanto falta e onde</span><span>Presidente</span></h3>
    <div class="sm mut" style="line-height:1.45">Faltam <b class="num" style="color:var(--tx)">${fmt(TS)}</b> seções e <b class="num" style="color:var(--tx)">${fmtMi(TE)}</b> eleitores no total oficial do Brasil.</div>
    <div class="ftab"><div class="ft fh"><span>Lugar</span><span>Faltam</span><span>% falta</span><span>Lidera lá</span></div>${rows.map(tr).join('')}</div>
-   ${rows.length>10?`<button class="xbtn" id="ftmore" style="margin:10px 0 0">Mostrar todos (${rows.length})</button>`:''}
+   ${rows.length>6?`<button class="xbtn" id="ftmore" style="margin:10px 0 0">Mostrar todos (${rows.length})</button>`:''}
    <p class="sm mut" style="margin-top:10px;line-height:1.4">Ordem: onde falta mais eleitorado. "Lidera lá" é o resultado já apurado em cada lugar e a vantagem, em pontos, sobre o segundo colocado.</p></div>`;
 }
-function bindFaltam(){const b=$('ftmore');if(!b)return;b.onclick=()=>{const c=$('faltam');const on=c.classList.toggle('all');b.textContent=on?'Mostrar menos':'Mostrar todos'}}
+/* coloca um cartão na coluna da esquerda, logo após a composição dos votos (v6.4) */
+function placeLeft(id,html,first){
+  const old=$(id);const wasAll=old&&old.classList.contains('all');if(old)old.remove();if(!html)return;
+  const c0=$('compc');const ref=c0?(c0.closest('.card')||c0):null;const L=$('colL');if(!L)return;
+  const tmp=document.createElement('div');tmp.innerHTML=html.trim();const el=tmp.firstElementChild;if(!el)return;el.id=id;if(wasAll)el.classList.add('all');
+  if(ref){let at=ref;if(!first){const f=$('faltam');if(f&&f.previousElementSibling===ref)at=f}at.after(el)}else L.appendChild(el);
+}
+function bindFaltam(){const b=$('ftmore');if(!b)return;const c=$('faltam');if(c&&c.classList.contains('all'))b.textContent='Mostrar menos';b.onclick=()=>{const c=$('faltam');const on=c.classList.toggle('all');b.textContent=on?'Mostrar menos':'Mostrar todos'}}
 function regiaoHtml(){
   const out=[];const tot={};
-  const add=(nome,ufs)=>{let st=0,ts=0;const v={};let any=false;for(const uf of ufs){const d=presD(uf);if(!d)return;any=true;const s=sec(d);st+=s.st;ts+=s.ts;for(const c of cands(d)){(v[c.sq]=v[c.sq]||{nm:c.nm,sg:c.sg,v:0}).v+=c.v}}
+  const add=(nome,ufs)=>{let st=0,ts=0;const v={};let any=false;for(const uf of ufs){const d=presD(uf);if(!d)return;any=true;const s=sec(d);st+=s.st;ts+=s.ts;for(const c of cands(d)){(v[c.sq]=v[c.sq]||{sq:c.sq,nm:c.nm,sg:c.sg,v:0}).v+=c.v}}
     if(!any)return;const arr=Object.values(v).sort((a,b)=>b.v-a.v),t=arr.reduce((a,x)=>a+x.v,0);out.push({nome,ap:ts?st/ts*100:0,arr,t})};
   for(const [n,u] of Object.entries(REG))add(n,u);add('Exterior',['zz']);
   if(out.length<5)return '';
-  const row=r=>{const a=r.arr[0],b=r.arr[1];const bar=r.t?`<div class="bar" style="height:6px;margin-top:6px"><i style="width:${a.v/r.t*100}%;background:${colorOf(a.sg)}"></i><i style="width:${b?b.v/r.t*100:0}%;background:${b?colorOf(b.sg):'#333'}"></i></div>`:'';
-    return `<div class="rg"><div class="row sm"><b>${esc(r.nome)}</b><span class="mut num">${pc(r.ap,1)} apurado</span></div>${r.t?`<div class="row sm" style="margin-top:4px"><span><i class="dt" style="background:${colorOf(a.sg)}"></i>${esc(a.nm.split(' ')[0])} ${pc(a.v/r.t*100,1)}</span>${b?`<span>${esc(b.nm.split(' ')[0])} ${pc(b.v/r.t*100,1)}<i class="dt" style="background:${colorOf(b.sg)};margin:0 0 0 6px"></i></span>`:''}</div>${bar}`:'<div class="sm mut" style="margin-top:4px">sem votos apurados</div>'}</div>`};
-  return `<div class="card"><h3><span>Por região</span><span>Presidente</span></h3>${out.map(row).join('')}<p class="sm mut" style="margin-top:10px;line-height:1.4">Percentuais entre os votos dos candidatos já apurados em cada região.</p></div>`;
+  const bd=cache.get(brpres())?.d,top=bd?cands(bd).slice(0,2):(out[0].arr.slice(0,2));const A=top[0],B=top[1];if(!A||!B)return '';
+  const row=r=>{const va=(r.arr.find(x=>x.sq===A.sq)||{v:0}).v,vb=(r.arr.find(x=>x.sq===B.sq)||{v:0}).v,t=r.t||0;
+    const zz=r.nome==='Exterior';return `<div class="rg2${zz?' rgz':''}" ${zz?'id="rgz" ':''}title="${esc(A.nm)}: ${fmt(va)} · ${esc(B.nm)}: ${fmt(vb)}${zz?' · votos do exterior já incluídos no total do Brasil · clique para abrir':''}"><span><b>${esc(r.nome)}</b><small>${pc(r.ap,1)} apurado</small></span>${t?`<div class="bar"><i style="width:${va/t*100}%;background:${colorOf(A.sg)}"></i><i style="width:${vb/t*100}%;background:${colorOf(B.sg)}"></i></div><span class="num">${pc(va/t*100,1)} · ${pc(vb/t*100,1)}</span>`:'<span class="mut sm">sem votos</span><span></span>'}</div>`};
+  return `<div class="card"><h3><span>Por região</span><span><i class="dt" style="background:${colorOf(A.sg)}"></i>${esc(A.nm.split(' ')[0])} · <i class="dt" style="background:${colorOf(B.sg)}"></i>${esc(B.nm.split(' ')[0])}</span></h3>${out.map(row).join('')}</div>`;
 }
 function andamentoBox(box){
   const U=units(S.mapCargo,true).filter(u=>!t1Off(u.uf));if(!U.length){box.innerHTML='';return}
@@ -1150,7 +1168,6 @@ function vantagemCard(d,cs){
     if(need>100){st='<span class="st q">Virada improvável</span>';msg=`${esc(B.nm)} precisaria de mais votos válidos do que a estimativa de votos restantes.`}
     else{st='<span class="st o">Em aberto</span>';msg=`${esc(B.nm)} precisaria de ${pc(need,1)} dos votos válidos restantes para empatar.`}}
   return `<div class="vr">${st}<div class="kv">
-   <div class="l"><span>Vantagem atual</span><b class="num">${fmt(lead)} votos</b></div>
    <div class="l"><span>Votos válidos restantes (estimativa)</span><b class="num">${fmt(restVal)}</b></div>
    <div class="l"><span>Eleitores das seções restantes</span><b class="num">${fmt(restEl)}</b></div></div>
    <div class="sm mut" style="margin-top:8px;line-height:1.45">${msg} Indicação matemática, não substitui a declaração oficial do TSE.</div></div>`;
@@ -1165,7 +1182,7 @@ async function projBox(box){
     for(const c of l.all){const sh=c.v/tot,x=per[c.n]=per[c.n]||{nm:c.nm,sg:c.sg,cur:0,proj:0,lo:0,hi:0};x.cur+=c.v;x.proj+=c.v+sh*rem;x.lo+=c.v+Math.max(0,sh-DV)*rem;x.hi+=c.v+Math.min(1,sh+DV)*rem}}
   const bdp=cache.get(brpres())?.d,ap=bdp?sec(bdp).p:(tsT?stT/tsT*100:0);
   if(!any||ap>=99.95){box.innerHTML='';return}
-  if(ap<MIN){box.innerHTML=`<div class="card"><h3><span>Projeção do resultado final</span><span>votos restantes</span></h3><div class="mut sm" style="line-height:1.5">A projeção aparece a partir de ${MIN}% das seções apuradas no país (agora: ${pc(ap,1)}). Os primeiros números costumam vir de regiões que não representam o conjunto do eleitorado.</div></div>`;return}
+  if(ap<MIN){box.innerHTML=`<div class="card"><h3><span>Projeção do resultado final</span><span>votos restantes</span></h3><div class="mut sm" style="line-height:1.45">Aparece a partir de ${MIN}% das seções apuradas (agora ${pc(ap,2)}), porque os primeiros números não representam o eleitorado.</div></div>`;return}
   const all=Object.values(per),tp=all.reduce((a,x)=>a+x.proj,0)||1,tc=all.reduce((a,x)=>a+x.cur,0)||1,arr=all.sort((a,b)=>b.proj-a.proj).slice(0,3);
   box.innerHTML=`<div class="card"><h3><span>Projeção do resultado final</span><span>${pc(ap,1)} apurado</span></h3><div class="rk">${arr.map(x=>{const lo=x.lo/tp*100,hi=x.hi/tp*100,p=x.proj/tp*100,c=colorOf(x.sg);return `<div class="it"><span class="pos"></span><span class="nm">${esc(x.nm)}<small>${esc(x.sg)}</small></span><span class="pc">${pc(p,1)}</span><div class="b"><div class="band"><i style="left:${lo}%;width:${Math.max(.5,hi-lo)}%;background:${c}"></i><b style="left:${p}%"></b></div></div><div class="vt">faixa de ${pc(lo,1)} a ${pc(hi,1)} · hoje ${pc(x.cur/tc*100,1)}</div></div>`}).join('')}</div>
   <p class="sm mut" style="margin-top:10px;line-height:1.4">Estimativa: cada UF mantém o perfil das seções já apuradas. A faixa mostra o resultado se os votos restantes de cada UF variarem ${DV*100} p.p. para cima ou para baixo. É um cenário, não uma previsão nem uma declaração de resultado.</p></div>`;
@@ -1260,7 +1277,7 @@ function serieCard(){
   const yy=v=>(H-6-(v-mn)/rg*(H-12)).toFixed(1);
   const pts=arr.map((q,i)=>xs[i].toFixed(1)+','+yy(ys[i])).join(' ');
   const f=arr[0],l=arr[arr.length-1],hm=t=>new Date(t).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-  return `<div class="card"><h3><span>Evolução da vantagem</span><span>${arr.length} leituras</span></h3>
+  return `<div class="card" id="serie"><h3><span>Evolução da vantagem</span><span>${arr.length} leituras</span></h3>
   <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:90px"><line x1="0" x2="${W}" y1="${yy(0)}" y2="${yy(0)}" stroke="#2a3652" stroke-dasharray="3 3"/><polyline points="${pts}" fill="none" stroke="#7cf2c8" stroke-width="2" stroke-linejoin="round"/></svg>
   <div class="row sm mut"><span>${hm(f.t)} · ${pc(f.p,1)} apurado</span><span>${hm(l.t)} · ${pc(l.p,1)}</span></div>
   <div class="sm" style="margin-top:8px">Vantagem de ${esc(l.na)} sobre ${esc(l.nb)}: <b class="num">${(l.a-l.b).toFixed(2).replace('.',',')} p.p.</b> (era ${(f.a-f.b).toFixed(2).replace('.',',')})</div>
@@ -1328,7 +1345,7 @@ async function makePng(){
     for(const sp of $('legend').children){const i=sp.querySelector('i'),txt=sp.textContent.trim().replace(/\s+/g,' '),w=g.measureText(txt).width+34;if(x+w>W-40){x=40;y+=32}
       if(i){const col=getComputedStyle(i).backgroundColor;if(col&&col!=='rgba(0, 0, 0, 0)'){g.fillStyle=col;g.fillRect(x,y-14,14,14)}else if(/gradient/.test(getComputedStyle(i).backgroundImage)){const m=getComputedStyle(i).backgroundImage.match(/rgba?\([^)]+\)|#[0-9a-f]{3,6}/i);if(m){g.fillStyle=m[0];g.fillRect(x,y-14,14,14);g.strokeStyle='#05070c';g.lineWidth=2;for(let k=-14;k<14;k+=5){g.beginPath();g.moveTo(x+k,y);g.lineTo(x+k+14,y-14);g.stroke()}}}else if(/245, 185, 66/.test(getComputedStyle(i).boxShadow)){g.strokeStyle='#f5b942';g.lineWidth=2;g.strokeRect(x+1,y-13,12,12)}}
       g.fillStyle='#9aa8c4';g.fillText(txt,x+(i?22:0),y);x+=w+18}
-    g.fillStyle='#5d6b88';g.font='500 17px sans-serif';g.fillText('Desenvolvido por Luciano Victor com apoio de IA (Claude, Anthropic)  ·  v. 6.3  ·  Fonte: TSE e IBGE  ·  '+$('stamp').textContent,40,1372);
+    g.fillStyle='#5d6b88';g.font='500 17px sans-serif';g.fillText('Desenvolvido por Luciano Victor com apoio de IA (Claude, Anthropic)  ·  v. 6.4  ·  Fonte: TSE e IBGE  ·  '+$('stamp').textContent,40,1372);
     const blob=await new Promise(ok=>cv.toBlob(ok,'image/png'));URL.revokeObjectURL(url);return blob;
   }
 }
