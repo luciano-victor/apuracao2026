@@ -207,6 +207,10 @@ header{gap:12px;flex-wrap:nowrap}.brand{white-space:nowrap}.brand small{display:
 .rg{padding:9px 0;border-bottom:1px solid var(--line)}.rg:last-of-type{border-bottom:0}
 .pixr{display:flex;gap:14px;align-items:center}.pixq{width:86px;height:86px;background:#fff;border-radius:10px;padding:7px;flex:none}
 .col::-webkit-scrollbar{width:0;height:0}
+.layers,.tabs,.mapsw,.turns{scrollbar-width:none;-ms-overflow-style:none}.layers::-webkit-scrollbar,.tabs::-webkit-scrollbar,.mapsw::-webkit-scrollbar{width:0;height:0;display:none}
+.layers.ovr{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
+.layers.ovl{-webkit-mask-image:linear-gradient(90deg,transparent,#000 36px);mask-image:linear-gradient(90deg,transparent,#000 36px)}
+.layers.ovl.ovr{-webkit-mask-image:linear-gradient(90deg,transparent,#000 36px,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,transparent,#000 36px,#000 calc(100% - 36px),transparent)}
 .col.ovf{-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 34px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 34px),transparent)}
 #colR{display:flex;flex-direction:column}#colR.lid #mainBox{order:-1}
 .rg2{display:grid;grid-template-columns:minmax(0,1fr) 92px 74px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:12px}.rg2:last-of-type{border-bottom:0}
@@ -239,7 +243,7 @@ header{gap:12px;flex-wrap:nowrap}.brand{white-space:nowrap}.brand small{display:
   </section>
   <section class="col r" id="colR"><div id="layerBox" class="stack"></div><div id="mainBox" class="stack"></div><div id="trendBox" class="stack"></div></section>
 </main>
-<footer><span>Fonte: TSE · resultados.tse.jus.br · malhas: IBGE. Dados em apuração oficial; podem sofrer retificação.</span><span class="cred">Desenvolvido por <b>Luciano Victor</b> com apoio de IA (Claude, Anthropic) · v. 6.4</span><span id="foot"></span><img src="https://hits.sh/luciano-victor.github.io/apuracao2026.svg" alt="" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></footer><!-- contador de acessos (v6.1): uma contagem por abertura da página; estatísticas em https://hits.sh/luciano-victor.github.io/apuracao2026/ -->
+<footer><span>Fonte: TSE · resultados.tse.jus.br · malhas: IBGE. Dados em apuração oficial; podem sofrer retificação.</span><span class="cred">Desenvolvido por <b>Luciano Victor</b> com apoio de IA (Claude, Anthropic) · v. 6.5</span><span id="foot"></span><img src="https://hits.sh/luciano-victor.github.io/apuracao2026.svg" alt="" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></footer><!-- contador de acessos (v6.1): uma contagem por abertura da página; estatísticas em https://hits.sh/luciano-victor.github.io/apuracao2026/ -->
 </div>
 <div class="tip" id="tip"></div>
 
@@ -904,7 +908,9 @@ async function extCard(tok,fresh){
     <div class="mut sm" style="margin-top:8px">${pc(s.p,1)} das seções apuradas · ${fmt(e.te)} eleitores. Os votos do exterior já estão no total do Brasil.</div></div>`;
     $('colL').insertAdjacentHTML('beforeend',h);$('extc').onclick=()=>go({uf:'zz',mun:null,cargo:'pres'})}catch(e){}
 }
-function updOvf(){for(const c of document.querySelectorAll('.col')){const more=c.scrollHeight>c.clientHeight+4&&c.scrollTop+c.clientHeight<c.scrollHeight-6;c.classList.toggle('ovf',more&&innerWidth>1100)}}
+function updLay(){for(const e of document.querySelectorAll('.layers,.tabs')){const o=e.scrollWidth>e.clientWidth+2;e.classList.toggle('ovl',o&&e.scrollLeft>2);e.classList.toggle('ovr',o&&e.scrollLeft+e.clientWidth<e.scrollWidth-2)}}
+document.querySelectorAll('.layers,.tabs').forEach(e=>{e.addEventListener('scroll',updLay,{passive:true});e.addEventListener('wheel',ev=>{if(e.scrollWidth>e.clientWidth&&Math.abs(ev.deltaY)>Math.abs(ev.deltaX)){e.scrollLeft+=ev.deltaY;ev.preventDefault()}},{passive:false})});
+function updOvf(){updLay();for(const c of document.querySelectorAll('.col')){const more=c.scrollHeight>c.clientHeight+4&&c.scrollTop+c.clientHeight<c.scrollHeight-6;c.classList.toggle('ovf',more&&innerWidth>1100)}}
 document.querySelectorAll('.col').forEach(c=>c.addEventListener('scroll',updOvf,{passive:true}));addEventListener('resize',updOvf);setInterval(updOvf,1000);
 function stamp(d){if(!d)return;$('stamp').title='';const z=!N(d.s?.st);const el=$('stamp');el.textContent=z?`${S.turn===2?'2º turno · ':''}aguardando apuração`:`TSE ${String(d.dg||'').slice(0,5)} ${d.hg}`;el.title=z?'':`Totalização do TSE em ${d.dg} às ${d.hg}`;$('dot').classList.remove('err')}
 
@@ -929,6 +935,7 @@ function drawLayers(){
   const el=$('layers');
   el.innerHTML=list.map(([k,n,t])=>`<button data-k="${k}" class="${k===S.layer?'on':''}" title="${t}">${k==='cand'?esc((S.cand.nm.split(' ')[0]||'Candidato'))+' ✕':n}</button>`).join('');
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>b.dataset.k==='cand'&&S.layer==='cand'?clearCand():go({layer:b.dataset.k}));
+  const on=el.querySelector('button.on');if(on&&el.scrollWidth>el.clientWidth){const l=on.offsetLeft-el.clientWidth/2+on.offsetWidth/2;el.scrollLeft=Math.max(0,l)}setTimeout(updLay,0);
 }
 const T2_DATE=new Date('2026-10-25T00:00:00-03:00');
 function drawTurns(){
@@ -1345,7 +1352,7 @@ async function makePng(){
     for(const sp of $('legend').children){const i=sp.querySelector('i'),txt=sp.textContent.trim().replace(/\s+/g,' '),w=g.measureText(txt).width+34;if(x+w>W-40){x=40;y+=32}
       if(i){const col=getComputedStyle(i).backgroundColor;if(col&&col!=='rgba(0, 0, 0, 0)'){g.fillStyle=col;g.fillRect(x,y-14,14,14)}else if(/gradient/.test(getComputedStyle(i).backgroundImage)){const m=getComputedStyle(i).backgroundImage.match(/rgba?\([^)]+\)|#[0-9a-f]{3,6}/i);if(m){g.fillStyle=m[0];g.fillRect(x,y-14,14,14);g.strokeStyle='#05070c';g.lineWidth=2;for(let k=-14;k<14;k+=5){g.beginPath();g.moveTo(x+k,y);g.lineTo(x+k+14,y-14);g.stroke()}}}else if(/245, 185, 66/.test(getComputedStyle(i).boxShadow)){g.strokeStyle='#f5b942';g.lineWidth=2;g.strokeRect(x+1,y-13,12,12)}}
       g.fillStyle='#9aa8c4';g.fillText(txt,x+(i?22:0),y);x+=w+18}
-    g.fillStyle='#5d6b88';g.font='500 17px sans-serif';g.fillText('Desenvolvido por Luciano Victor com apoio de IA (Claude, Anthropic)  ·  v. 6.4  ·  Fonte: TSE e IBGE  ·  '+$('stamp').textContent,40,1372);
+    g.fillStyle='#5d6b88';g.font='500 17px sans-serif';g.fillText('Desenvolvido por Luciano Victor com apoio de IA (Claude, Anthropic)  ·  v. 6.5  ·  Fonte: TSE e IBGE  ·  '+$('stamp').textContent,40,1372);
     const blob=await new Promise(ok=>cv.toBlob(ok,'image/png'));URL.revokeObjectURL(url);return blob;
   }
 }
