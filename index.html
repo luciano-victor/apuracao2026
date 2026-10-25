@@ -189,6 +189,7 @@ header{gap:12px;flex-wrap:nowrap}.brand{white-space:nowrap}.brand small{display:
   .legend{max-width:calc(100% - 140px);gap:6px 10px;font-size:11.5px}
   .card{padding:13px 15px}.big{font-size:29px}.ring{width:80px;height:80px}.ring span{width:64px;height:64px;font-size:14px}
   .av{width:50px;height:50px;font-size:18px}
+  .ft .fl small{display:none}.ft{font-size:11.5px;gap:5px}
   .hero .big{font-size:25px!important}.card h3{gap:8px}
 }
 @media(max-height:820px) and (min-width:1101px){
@@ -198,6 +199,12 @@ header{gap:12px;flex-wrap:nowrap}.brand{white-space:nowrap}.brand small{display:
   footer{padding:6px 16px}
 }
 @media(max-width:1180px) and (min-width:1101px){.srch{display:none}}
+.ftab{margin-top:10px;display:flex;flex-direction:column}
+.ft{display:grid;grid-template-columns:minmax(0,1.15fr) 58px 44px minmax(0,1.35fr);gap:6px;align-items:center;font-size:12px;padding:6px 0;border-bottom:1px solid var(--line)}.ft>span{white-space:nowrap}.ft .num{text-align:right}.ft.fh span{white-space:nowrap}.ft.fh span:nth-child(2),.ft.fh span:nth-child(3){text-align:right}
+.ft.fh{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--tx3);padding-top:0}.ft .fn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.ft .fl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ft .fl i,.dt{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}.ft .fl small{color:var(--tx3)}
+.ft.fx{display:none}#faltam.all .ft.fx{display:grid}
+.rg{padding:9px 0;border-bottom:1px solid var(--line)}.rg:last-of-type{border-bottom:0}
 .legend .lcap{flex-basis:100%;font-size:11px;color:var(--tx3);line-height:1.35;max-width:470px;margin-top:-2px}
 </style>
 </head>
@@ -226,7 +233,7 @@ header{gap:12px;flex-wrap:nowrap}.brand{white-space:nowrap}.brand small{display:
   </section>
   <section class="col r" id="colR"><div id="layerBox" class="stack"></div><div id="mainBox" class="stack"></div><div id="trendBox" class="stack"></div></section>
 </main>
-<footer><span>Fonte: TSE · resultados.tse.jus.br · malhas: IBGE. Dados em apuração oficial; podem sofrer retificação.</span><span class="cred">Desenvolvido por <b>Luciano Victor</b> com apoio de IA (Claude, Anthropic) · v. 6.1</span><span id="foot"></span><img src="https://hits.sh/luciano-victor.github.io/apuracao2026.svg" alt="" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></footer><!-- contador de acessos (v6.1): uma contagem por abertura da página; estatísticas em https://hits.sh/luciano-victor.github.io/apuracao2026/ -->
+<footer><span>Fonte: TSE · resultados.tse.jus.br · malhas: IBGE. Dados em apuração oficial; podem sofrer retificação.</span><span class="cred">Desenvolvido por <b>Luciano Victor</b> com apoio de IA (Claude, Anthropic) · v. 6.2</span><span id="foot"></span><img src="https://hits.sh/luciano-victor.github.io/apuracao2026.svg" alt="" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></footer><!-- contador de acessos (v6.1): uma contagem por abertura da página; estatísticas em https://hits.sh/luciano-victor.github.io/apuracao2026/ -->
 </div>
 <div class="tip" id="tip"></div>
 
@@ -249,6 +256,7 @@ const PCOL={PL:'#4f8cff',PT:'#ff4d5e',NOVO:'#f5b942',PSD:'#37d6a5',MDB:'#ff8a3d'
 const EXTRA=['#c9c9d6','#9bd34a','#ffb3c1','#7aa2ff','#e5c07b','#56d3c1','#ff9f68'];
 const colorOf=sg=>{sg=(sg||'').toUpperCase();if(PCOL[sg])return PCOL[sg];let h=0;for(const c of sg)h=(h*31+c.charCodeAt(0))>>>0;return EXTRA[h%EXTRA.length]};
 const LAYERS=[['lider','Líder','Candidato ou partido mais votado'],['margem','Margem','Diferença entre o 1º e o 2º colocado'],['decisivo','Decisivo','Onde brancos e nulos superam a margem'],['abst','Abstenção','Percentual de abstenção'],['pxg','Pres × Gov','Líder para Presidente versus líder para Governador'],['sim','2º turno','Simulador de transferência de votos']];
+LAYERS.push(['andamento','Andamento','Percentual de seções apuradas em cada lugar']);
 LAYERS.push(['bolhas','Votos absolutos','Círculos proporcionais à vantagem do líder em número de votos'],['abstvar','Abstenção 1º × 2º','Variação da abstenção entre os dois turnos']);
 LAYERS.push(['virada','Viradas','Onde o líder entre os dois finalistas mudou do 1º para o 2º turno']);
 LAYERS.push(['desl','Deslocamento','Mudança do 1º para o 2º turno na disputa entre os finalistas'],['cand','Candidato','Desempenho de um candidato em cada município']);
@@ -468,7 +476,7 @@ function buildPaths(svg,items,scope){
 }
 const leaders={};
 function setLeader(key,d,cg,cand){
-  const e=eleit(d),v=votos(d);const base={sec:sec(d).p,abs:e.pa,nv:v.vb+v.vn,te:e.te,vv:v.vv};
+  const e=eleit(d),v=votos(d);const base={sec:sec(d).p,abs:e.pa,nv:v.vb+v.vn,te:e.te,vv:v.vv,rest:N(d.e?.esnt)};
   if(isProp(cg)&&!cand){const ps=partidos(d);if(ps.length)leaders[key]={nm:ps[0].sg,sg:ps[0].sg,p:ps[0].p,v:ps[0].v,second:ps[1]?{nm:ps[1].sg,p:ps[1].p}:null,mg:ps[1]?ps[0].p-ps[1].p:100,mv:ps[1]?ps[0].v-ps[1].v:ps[0].v,party:true,...base};return}
   const c=cands(d);if(!c.length)return;
   const vagas=isProp(cg)?1:Math.max(1,N(d.carg?.[0]?.nv)),i=Math.min(vagas-1,c.length-1);
@@ -505,6 +513,7 @@ function fillUnit(uf,m){
   if(L==='pxg'){const a=leaders[K('pres',uf,m)],b=leaders[K('gov',uf,m)];if(!a||!b)return DARK;return a.sg===b.sg?colorOf(a.sg):pat(colorOf(a.sg),colorOf(b.sg))}
   if(L==='sim'){const l=leaders[K(simCg(),uf,m)];if(!l||!l.all||!S.fin)return DARK;const r=simUnit(l);return simFill(r)}
   if(L==='cand'){const sh=S.cand?candShare(uf,m):null;return sh==null?DARK:mix(colorOf(S.cand.sg),clamp(.14+sh/(S.candMax||1)*.86,.14,1))}
+  if(L==='andamento'){const l=leaders[K(S.mapCargo,uf,m)];if(!l)return DARK;if(t1Off(uf))return NEUTRO;return l.sec>=99.995?'#7cf2c8':l.sec<=0?'#1d2742':mix('#38c8e8',clamp(.18+l.sec/100*.82,.18,1))}
   if(L==='bolhas')return t1Off(uf)?NEUTRO:'#1a2238';
   if(L==='abstvar'){const r=abstVar(uf,m);if(r==null)return DARK;return r>=0?mix('#ff9f45',clamp(.2+r/6*.8,.2,1)):mix('#7cf2c8',clamp(.2+(-r)/6*.8,.2,1))}
   if(L==='virada'){const v=viradaVal(uf,m);if(!v)return DARK;const c=colorOf(v.sg2);return v.flip?pat(c,mix(c,.3)):mix(c,.24)}
@@ -545,6 +554,8 @@ function legend(){
     const n=u.filter(x=>x.l.nv>decThr(x.l,S.mapCargo,x.uf)).length;
     h=swt('#ff9f45',r50?'brancos+nulos > distância até 50%':'brancos+nulos > margem',n)+swt('#1d2742',r50?'distância maior':'margem maior',u.length-n)}
   else if(L==='abst')h=`<span>menor</span><i class="grad"></i><span>maior abstenção</span>`;
+  else if(L==='andamento'){const U=units(S.mapCargo,true).filter(u=>!t1Off(u.uf));const z=U.filter(u=>u.l.sec<=0).length,f=U.filter(u=>u.l.sec>=99.995).length;
+    h=swt('#1d2742','não iniciada',z)+`<span>início</span><i class="grad" style="background:linear-gradient(90deg,${mix('#38c8e8',.18)},#38c8e8)"></i><span>quase concluída</span>`+swt('#7cf2c8','concluída',f)}
   else if(L==='pxg'){let eq=0,df=0;const a=units('pres');for(const u of a){const g=leaders[K('gov',u.uf,S.uf==='br'?null:u.id)];if(!g)continue;u.l.sg===g.sg?eq++:df++}
     h=swt('#7a89a8','cor sólida: mesmo partido',eq)+`<span><i style="background:repeating-linear-gradient(45deg,#4f8cff 0 3px,#ff4d5e 3px 6px)"></i>listrado: partidos diferentes <span class="num" style="color:var(--tx3)">${df}</span></span>`}
   else if(L==='sim'&&S.fin){let a=0,b=0;for(const u of units(simCg())){if(!u.l.all)continue;const r=simUnit(u.l);r.a>=r.b?a++:b++}
@@ -562,6 +573,7 @@ function legend(){
   const CAP={lider:S.uf==='br'&&isProp(S.cargo)?'Cor: partido mais votado em cada UF. Número: UFs em que lidera.':'Cor: partido de quem lidera em cada '+un+'. Número: '+(un==='cidade'?'quantas ':'quantos ')+un+'s cada partido lidera.',
    margem:'Diferença em pontos percentuais entre o 1º e o 2º colocado. Número: '+(un==='cidade'?'quantas ':'quantos ')+un+'s em cada faixa.',
    decisivo:decRule(S.mapCargo,S.uf==='br'?null:S.uf)==='50'?'Laranja: brancos e nulos superam a distância do líder até a metade dos votos válidos, ou seja, poderiam ter mudado a existência de 2º turno.':(S.mapCargo==='sen'?'Laranja: brancos e nulos superam a diferença entre o último eleito e o primeiro não eleito.':'Laranja: brancos e nulos somam mais votos do que a diferença entre os dois finalistas.'),
+   andamento:'Percentual de seções já totalizadas pelo TSE em cada '+un+'. Mostra onde a contagem já andou e onde ainda falta.',
    abst:'Percentual de eleitores que não compareceram. Quanto mais claro, maior a abstenção.',
    pxg:'Compara o partido que lidera para Presidente com o que lidera para Governador.',
    sim:'Simulação do 2º turno com as transferências de votos que você ajustou. Cor: finalista à frente.',
@@ -666,7 +678,8 @@ function listRows(rows,fn){return `<div class="rk">${rows.map(fn).join('')}</div
 const rowU=(nome,val,sub)=>`<div class="it"><span class="pos"></span><span class="nm">${esc(nome)}</span><span class="pc">${val}</span><div class="vt">${sub}</div></div>`;
 async function layerBox(){
   const L=S.layer,box=$('layerBox');
-  if(L==='lider'&&S.uf==='br'&&S.cargo==='pres'){await projBox(box);return}
+  if(L==='lider'&&S.uf==='br'&&S.cargo==='pres'){await projBox(box);if(S.layer!=='lider')return;box.insertAdjacentHTML('beforeend',faltamHtml()+regiaoHtml());bindFaltam();return}
+  if(L==='andamento'){andamentoBox(box);return}
   if(L==='cand'){candBox(box);return}
   if(L==='desl'){deslBox(box);return}
   if(L==='virada'){viradaBox(box);return}
@@ -734,11 +747,13 @@ function mapTip(e,id){
   else if(L==='desl'){const r=deslVal(uf,m);body=!r?'<span class="mut">sem dados do 2º turno</span>':`<div class="row"><span>${dot(colorOf(r.sgA))}${esc(r.nmA)}</span><b class="num">${pc(r.s2,1)}</b></div><div class="mut" style="margin-top:6px">1º turno: ${pc(r.s1,1)} · variação ${r.d>=0?'+':''}${r.d.toFixed(2).replace('.',',')} p.p.</div>`}
   else{const l=leaders[K(S.mapCargo,uf,m)];
     if(!l)body='<span class="mut">carregando…</span>';
+    else if(!l.v&&L==='andamento')body=`<div class="mut">Apurado: ${pc(l.sec,2)}${l.rest?' · faltam '+fmt(l.rest)+' eleitores':''}</div>`;
     else if(!l.v)body=l.sec>=99.995?`<div class="mut">Apuração concluída sem votos registrados (${fmt(l.te)} eleitores aptos)</div>`:`<div class="mut">${S.turn===2?'2º turno · ':''}aguardando apuração</div>`;
     else{const s=l.second;
       body=`<div class="row"><span>${dot(colorOf(l.sg))}${esc(l.nm)}</span><b class="num">${pc(l.p)}</b></div>${s?`<div class="row mut"><span>${esc(s.nm)}</span><span class="num">${pc(s.p)}</span></div>`:''}`;
       if(L==='margem')body+=`<div class="mut" style="margin-top:6px">Margem: ${l.mg.toFixed(2).replace('.',',')} p.p. · ${fmt(l.mv)} votos</div>`;
       else if(L==='decisivo')body+=decOff(S.mapCargo,uf)?`<div class="mut" style="margin-top:6px">Definido no 1º turno; fora desta comparação</div>`:`<div class="mut" style="margin-top:6px">Brancos+nulos: ${fmt(l.nv)} · ${decRule(S.mapCargo,uf)==='50'?'distância até 50%':'margem'}: ${fmt(decThr(l,S.mapCargo,uf))}</div>`;
+      else if(L==='andamento')body+=`<div class="mut" style="margin-top:6px">Apurado: ${pc(l.sec,2)}${l.rest?' · faltam '+fmt(l.rest)+' eleitores':''}</div>`;
       else if(L==='abst')body+=`<div class="mut" style="margin-top:6px">Abstenção: ${pc(l.abs,1)}</div>`;
       else body+=`<div class="mut" style="margin-top:6px">Apurado: ${pc(l.sec,2)}</div>`}}
   showTip(e,`<b>${esc(nome)}</b>${body}`);
@@ -1076,6 +1091,45 @@ function abstVarBox(box){
    <p class="sm mut" style="margin-top:10px;line-height:1.4">Durante a apuração, a abstenção do 2º turno considera apenas as seções já totalizadas.</p></div>`;
 }
 
+/* ===== quanto falta e onde; regiões; andamento (v6.2) ===== */
+const REG={Norte:['ac','ap','am','pa','ro','rr','to'],Nordeste:['al','ba','ce','ma','pb','pe','pi','rn','se'],'Centro-Oeste':['df','go','mt','ms'],Sudeste:['es','mg','rj','sp'],Sul:['pr','rs','sc']};
+const fmtMi=n=>n>=1e6?(n/1e6).toFixed(1).replace('.',',')+' mi':n>=1e3?Math.round(n/1e3)+' mil':fmt(n);
+function presD(uf){return cache.get(dataUrl(uf,'pres',null,S.turn))?.d}
+function faltamHtml(){
+  const rows=[];for(const uf of [...UFKEYS,'zz']){const d=presD(uf);if(!d)continue;const s=sec(d),e=eleit(d),cs=cands(d);const rest=N(d.e?.esnt)||Math.max(0,e.te*(1-s.p/100));
+    const a=cs[0],b=cs[1],lead=a&&a.v>0?{nm:a.nm,sg:a.sg,p:a.p,mg:b?a.p-b.p:a.p}:null;rows.push({uf,nome:UFS[uf][0],rest,ts:s.ts-s.st,sp:s.p,lead})}
+  if(rows.length<20)return '';
+  const T=rows.reduce((x,r)=>x+r.rest,0);if(T<=0)return '';
+  const bd=cache.get(brpres())?.d,bs=bd?sec(bd):null,TS=bs?bs.ts-bs.st:rows.reduce((x,r)=>x+r.ts,0),TE=bd?(N(bd.e?.esnt)||T):T;
+  rows.sort((x,y)=>y.rest-x.rest);
+  const tr=(r,i)=>`<div class="ft${i>=10?' fx':''}"><span class="fn">${esc(r.nome)}</span><span class="num">${fmtMi(r.rest)}</span><span class="num">${pc(r.rest/T*100,1)}</span><span class="fl">${r.lead?`<i style="background:${colorOf(r.lead.sg)}"></i>${esc(r.lead.nm.split(' ')[0])} ${pc(r.lead.p,1)} <small>+${r.lead.mg.toFixed(1).replace('.',',')}</small>`:'<span class="mut">sem votos</span>'}</span></div>`;
+  return `<div class="card" id="faltam"><h3><span>Quanto falta e onde</span><span>Presidente</span></h3>
+   <div class="sm mut" style="line-height:1.45">Faltam <b class="num" style="color:var(--tx)">${fmt(TS)}</b> seções e <b class="num" style="color:var(--tx)">${fmtMi(TE)}</b> eleitores no total oficial do Brasil.</div>
+   <div class="ftab"><div class="ft fh"><span>Lugar</span><span>Faltam</span><span>% falta</span><span>Lidera lá</span></div>${rows.map(tr).join('')}</div>
+   ${rows.length>10?`<button class="xbtn" id="ftmore" style="margin:10px 0 0">Mostrar todos (${rows.length})</button>`:''}
+   <p class="sm mut" style="margin-top:10px;line-height:1.4">Ordem: onde falta mais eleitorado. "Lidera lá" é o resultado já apurado em cada lugar e a vantagem, em pontos, sobre o segundo colocado.</p></div>`;
+}
+function bindFaltam(){const b=$('ftmore');if(!b)return;b.onclick=()=>{const c=$('faltam');const on=c.classList.toggle('all');b.textContent=on?'Mostrar menos':'Mostrar todos'}}
+function regiaoHtml(){
+  const out=[];const tot={};
+  const add=(nome,ufs)=>{let st=0,ts=0;const v={};let any=false;for(const uf of ufs){const d=presD(uf);if(!d)return;any=true;const s=sec(d);st+=s.st;ts+=s.ts;for(const c of cands(d)){(v[c.sq]=v[c.sq]||{nm:c.nm,sg:c.sg,v:0}).v+=c.v}}
+    if(!any)return;const arr=Object.values(v).sort((a,b)=>b.v-a.v),t=arr.reduce((a,x)=>a+x.v,0);out.push({nome,ap:ts?st/ts*100:0,arr,t})};
+  for(const [n,u] of Object.entries(REG))add(n,u);add('Exterior',['zz']);
+  if(out.length<5)return '';
+  const row=r=>{const a=r.arr[0],b=r.arr[1];const bar=r.t?`<div class="bar" style="height:6px;margin-top:6px"><i style="width:${a.v/r.t*100}%;background:${colorOf(a.sg)}"></i><i style="width:${b?b.v/r.t*100:0}%;background:${b?colorOf(b.sg):'#333'}"></i></div>`:'';
+    return `<div class="rg"><div class="row sm"><b>${esc(r.nome)}</b><span class="mut num">${pc(r.ap,1)} apurado</span></div>${r.t?`<div class="row sm" style="margin-top:4px"><span><i class="dt" style="background:${colorOf(a.sg)}"></i>${esc(a.nm.split(' ')[0])} ${pc(a.v/r.t*100,1)}</span>${b?`<span>${esc(b.nm.split(' ')[0])} ${pc(b.v/r.t*100,1)}<i class="dt" style="background:${colorOf(b.sg)};margin:0 0 0 6px"></i></span>`:''}</div>${bar}`:'<div class="sm mut" style="margin-top:4px">sem votos apurados</div>'}</div>`};
+  return `<div class="card"><h3><span>Por região</span><span>Presidente</span></h3>${out.map(row).join('')}<p class="sm mut" style="margin-top:10px;line-height:1.4">Percentuais entre os votos dos candidatos já apurados em cada região.</p></div>`;
+}
+function andamentoBox(box){
+  const U=units(S.mapCargo,true).filter(u=>!t1Off(u.uf));if(!U.length){box.innerHTML='';return}
+  const te=U.reduce((a,u)=>a+u.l.te,0)||1,rest=U.reduce((a,u)=>a+(u.l.rest||u.l.te*(1-u.l.sec/100)),0);
+  const R=[...U].sort((a,b)=>(b.l.rest||0)-(a.l.rest||0)).slice(0,6),w=unitWord();
+  const n0=U.filter(u=>u.l.sec<=0).length,n1=U.filter(u=>u.l.sec>=99.995).length;
+  box.innerHTML=`<div class="card"><h3><span>Andamento da apuração</span><span>${U.length} ${w}</span></h3>
+   <div class="kv"><div class="l"><span>Concluída</span><b class="num">${n1}</b></div><div class="l"><span>Em andamento</span><b class="num">${U.length-n0-n1}</b></div><div class="l"><span>Não iniciada</span><b class="num">${n0}</b></div><div class="l"><span>Eleitores ainda não apurados</span><b class="num">${fmtMi(rest)} · ${pc(rest/te*100,1)}</b></div></div>
+   ${rest>0?`<div style="margin-top:12px"><div class="sm mut" style="margin-bottom:6px">Onde falta mais eleitorado</div>${listRows(R,r=>rowU(r.nome,pc(r.l.sec,1),`faltam ${fmtMi(r.l.rest||0)} eleitores`))}</div>`:'<div class="sm mut" style="margin-top:12px">Apuração concluída em todos os lugares.</div>'}</div>`;
+}
+
 /* ===== vantagem × votos restantes (v5.3) ===== */
 function vantagemCard(d,cs){
   const s=sec(d);if(cs.length<2||s.p>=99.995||!s.st)return '';
@@ -1102,7 +1156,7 @@ async function projBox(box){
   for(const uf of UFKEYS){const l=leaders[K('pres',uf)];if(!l||!l.all)continue;const d=cache.get(dataUrl(uf,'pres',null,S.turn))?.d,s=d?sec(d):null;if(s){stT+=s.st;tsT+=s.ts}
     if(!l.sec)continue;any=true;const f=l.sec/100,tot=l.all.reduce((a,c)=>a+c.v,0)||1,rem=tot*(1-f)/f;
     for(const c of l.all){const sh=c.v/tot,x=per[c.n]=per[c.n]||{nm:c.nm,sg:c.sg,cur:0,proj:0,lo:0,hi:0};x.cur+=c.v;x.proj+=c.v+sh*rem;x.lo+=c.v+Math.max(0,sh-DV)*rem;x.hi+=c.v+Math.min(1,sh+DV)*rem}}
-  const ap=tsT?stT/tsT*100:0;
+  const bdp=cache.get(brpres())?.d,ap=bdp?sec(bdp).p:(tsT?stT/tsT*100:0);
   if(!any||ap>=99.95){box.innerHTML='';return}
   if(ap<MIN){box.innerHTML=`<div class="card"><h3><span>Projeção do resultado final</span><span>votos restantes</span></h3><div class="mut sm" style="line-height:1.5">A projeção aparece a partir de ${MIN}% das seções apuradas no país (agora: ${pc(ap,1)}). Os primeiros números costumam vir de regiões que não representam o conjunto do eleitorado.</div></div>`;return}
   const all=Object.values(per),tp=all.reduce((a,x)=>a+x.proj,0)||1,tc=all.reduce((a,x)=>a+x.cur,0)||1,arr=all.sort((a,b)=>b.proj-a.proj).slice(0,3);
@@ -1267,7 +1321,7 @@ async function makePng(){
     for(const sp of $('legend').children){const i=sp.querySelector('i'),txt=sp.textContent.trim().replace(/\s+/g,' '),w=g.measureText(txt).width+34;if(x+w>W-40){x=40;y+=32}
       if(i){const col=getComputedStyle(i).backgroundColor;if(col&&col!=='rgba(0, 0, 0, 0)'){g.fillStyle=col;g.fillRect(x,y-14,14,14)}else if(/gradient/.test(getComputedStyle(i).backgroundImage)){const m=getComputedStyle(i).backgroundImage.match(/rgba?\([^)]+\)|#[0-9a-f]{3,6}/i);if(m){g.fillStyle=m[0];g.fillRect(x,y-14,14,14);g.strokeStyle='#05070c';g.lineWidth=2;for(let k=-14;k<14;k+=5){g.beginPath();g.moveTo(x+k,y);g.lineTo(x+k+14,y-14);g.stroke()}}}else if(/245, 185, 66/.test(getComputedStyle(i).boxShadow)){g.strokeStyle='#f5b942';g.lineWidth=2;g.strokeRect(x+1,y-13,12,12)}}
       g.fillStyle='#9aa8c4';g.fillText(txt,x+(i?22:0),y);x+=w+18}
-    g.fillStyle='#5d6b88';g.font='500 17px sans-serif';g.fillText('Desenvolvido por Luciano Victor com apoio de IA (Claude, Anthropic)  ·  v. 6.1  ·  Fonte: TSE e IBGE  ·  '+$('stamp').textContent,40,1372);
+    g.fillStyle='#5d6b88';g.font='500 17px sans-serif';g.fillText('Desenvolvido por Luciano Victor com apoio de IA (Claude, Anthropic)  ·  v. 6.2  ·  Fonte: TSE e IBGE  ·  '+$('stamp').textContent,40,1372);
     const blob=await new Promise(ok=>cv.toBlob(ok,'image/png'));URL.revokeObjectURL(url);return blob;
   }
 }
