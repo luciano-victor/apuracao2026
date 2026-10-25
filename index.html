@@ -189,7 +189,7 @@ header{gap:12px;flex-wrap:nowrap}.brand{white-space:nowrap}.brand small{display:
   .legend{max-width:calc(100% - 140px);gap:6px 10px;font-size:11.5px}
   .card{padding:13px 15px}.big{font-size:29px}.ring{width:80px;height:80px}.ring span{width:64px;height:64px;font-size:14px}
   .av{width:50px;height:50px;font-size:18px}
-  .ft .fl small{display:none}.ft{font-size:11.5px;gap:5px}
+  .ft .fl small{display:none}.ft{font-size:11.5px;gap:5px}.fa .fl small{display:none}
   .hero .big{font-size:25px!important}.card h3{gap:8px}
 }
 @media(max-height:820px) and (min-width:1101px){
@@ -203,7 +203,8 @@ header{gap:12px;flex-wrap:nowrap}.brand{white-space:nowrap}.brand small{display:
 .ft{display:grid;grid-template-columns:minmax(0,1.15fr) 58px 44px minmax(0,1.35fr);gap:6px;align-items:center;font-size:12px;padding:6px 0;border-bottom:1px solid var(--line)}.ft>span{white-space:nowrap}.ft .num{text-align:right}.ft.fh span{white-space:nowrap}.ft.fh span:nth-child(2),.ft.fh span:nth-child(3){text-align:right}
 .ft.fh{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--tx3);padding-top:0}.ft .fn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
 .ft .fl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ft .fl i,.dt{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}.ft .fl small{color:var(--tx3)}
-.ft.fx{display:none}#faltam.all .ft.fx{display:grid}
+.fr{padding:7px 0;border-bottom:1px solid var(--line)}.fa{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1.1fr);gap:8px;align-items:center;font-size:12px}.fa b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fa .num{font-size:11px;white-space:nowrap}.fa .fl{text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fb{font-size:11px;color:var(--tx3);margin-top:2px}.fb b{color:var(--tx2);font-weight:600}
+.fr.fx{display:none}#faltam.all .fr.fx{display:block}
 .rg{padding:9px 0;border-bottom:1px solid var(--line)}.rg:last-of-type{border-bottom:0}
 .pixr{display:flex;gap:14px;align-items:center}.pixq{width:140px;height:140px;background:#fff;border-radius:10px;padding:7px;flex:none}
 .col::-webkit-scrollbar{width:0;height:0}
@@ -243,7 +244,7 @@ header{gap:12px;flex-wrap:nowrap}.brand{white-space:nowrap}.brand small{display:
   </section>
   <section class="col r" id="colR"><div id="layerBox" class="stack"></div><div id="mainBox" class="stack"></div><div id="trendBox" class="stack"></div></section>
 </main>
-<footer><span>Fonte: TSE · resultados.tse.jus.br · malhas: IBGE. Dados em apuração oficial; podem sofrer retificação.</span><span class="cred">Desenvolvido por <b>Luciano Victor</b> com apoio de IA (Claude, Anthropic) · v. 6.8</span><span id="foot"></span><img src="https://hits.sh/luciano-victor.github.io/apuracao2026.svg" alt="" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></footer><!-- contador de acessos (v6.1): uma contagem por abertura da página; estatísticas em https://hits.sh/luciano-victor.github.io/apuracao2026/ -->
+<footer><span>Fonte: TSE · resultados.tse.jus.br · malhas: IBGE. Dados em apuração oficial; podem sofrer retificação.</span><span class="cred">Desenvolvido por <b>Luciano Victor</b> com apoio de IA (Claude, Anthropic) · v. 6.9</span><span id="foot"></span><img src="https://hits.sh/luciano-victor.github.io/apuracao2026.svg" alt="" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></footer><!-- contador de acessos (v6.1): uma contagem por abertura da página; estatísticas em https://hits.sh/luciano-victor.github.io/apuracao2026/ -->
 </div>
 <div class="tip" id="tip"></div>
 
@@ -1120,18 +1121,22 @@ const REG={Norte:['ac','ap','am','pa','ro','rr','to'],Nordeste:['al','ba','ce','
 const fmtMi=n=>n>=1e6?(n/1e6).toFixed(1).replace('.',',')+' mi':n>=1e3?Math.round(n/1e3)+' mil':fmt(n);
 function presD(uf){return cache.get(dataUrl(uf,'pres',null,S.turn))?.d}
 function faltamHtml(){
+  /* votos a apurar = eleitores aptos das seções não apuradas × comparecimento já observado no lugar
+     (sem seções apuradas, usa o comparecimento do lugar no 1º turno; na falta dele, o do país) */
+  const bd=cache.get(brpres())?.d,be=bd?eleit(bd):null,natR=be&&N(bd.e?.est)>0?be.c/N(bd.e.est):0.78;
   const rows=[];for(const uf of [...UFKEYS,'zz']){const d=presD(uf);if(!d)continue;const s=sec(d),e=eleit(d),cs=cands(d);const rest=N(d.e?.esnt)||Math.max(0,e.te*(1-s.p/100));
-    const a=cs[0],b=cs[1],lead=a&&a.v>0?{nm:a.nm,sg:a.sg,p:a.p,mg:b?a.p-b.p:a.p}:null;rows.push({uf,nome:UFS[uf][0],rest,ts:s.ts-s.st,sp:s.p,lead})}
+    const est=N(d.e?.est),l1=leaders[K('pres',uf,null,1)],rate=est>0&&e.c>0?e.c/est:(l1&&l1.te?1-l1.abs/100:natR);
+    const a=cs[0],b=cs[1],lead=a&&a.v>0?{nm:a.nm,sg:a.sg,p:a.p,mg:b?a.p-b.p:a.p}:null;rows.push({uf,nome:UFS[uf][0],rest,vr:rest*rate,ts:s.ts-s.st,sp:s.p,lead})}
   if(rows.length<20)return '';
-  const T=rows.reduce((x,r)=>x+r.rest,0);if(T<=0)return '';
-  const bd=cache.get(brpres())?.d,bs=bd?sec(bd):null,TS=bs?bs.ts-bs.st:rows.reduce((x,r)=>x+r.ts,0),TE=bd?(N(bd.e?.esnt)||T):T;
-  rows.sort((x,y)=>y.rest-x.rest);
-  const tr=(r,i)=>`<div class="ft${i>=6?' fx':''}"><span class="fn">${esc(r.nome)}</span><span class="num">${fmtMi(r.rest)}</span><span class="num">${pc(r.rest/T*100,1)}</span><span class="fl">${r.lead?`<i style="background:${colorOf(r.lead.sg)}"></i>${esc(r.lead.nm.split(' ')[0])} ${pc(r.lead.p,1)} <small>+${r.lead.mg.toFixed(1).replace('.',',')}</small>`:'<span class="mut">sem votos</span>'}</span></div>`;
+  const T=rows.reduce((x,r)=>x+r.vr,0);if(T<=0)return '';
+  const bs=bd?sec(bd):null,TS=bs?bs.ts-bs.st:rows.reduce((x,r)=>x+r.ts,0),TE=bd?(N(bd.e?.esnt)||rows.reduce((x,r)=>x+r.rest,0)):rows.reduce((x,r)=>x+r.rest,0);
+  rows.sort((x,y)=>y.vr-x.vr);
+  const tr=(r,i)=>`<div class="fr${i>=6?' fx':''}"><div class="fa"><b>${esc(r.nome)}</b><span class="num mut">${pc(r.sp,1)} apurado</span><span class="fl">${r.lead?`<i style="background:${colorOf(r.lead.sg)}"></i>${esc(r.lead.nm.split(' ')[0])} ${pc(r.lead.p,1)} <small>+${r.lead.mg.toFixed(1).replace('.',',')}</small>`:'<span class="mut">sem votos</span>'}</span></div><div class="fb">≈ ${fmtMi(r.vr)} votos a apurar · <b>${pc(r.vr/T*100,1)}</b> do que falta no país</div></div>`;
   return `<div class="card" id="faltam"><h3><span>Quanto falta e onde</span><span>Presidente</span></h3>
-   <div class="sm mut" style="line-height:1.45">Faltam <b class="num" style="color:var(--tx)">${fmt(TS)}</b> seções e <b class="num" style="color:var(--tx)">${fmtMi(TE)}</b> eleitores no total oficial do Brasil.</div>
-   <div class="ftab"><div class="ft fh"><span>Lugar</span><span>Faltam</span><span>% falta</span><span>Lidera lá</span></div>${rows.map(tr).join('')}</div>
+   <div class="sm mut" style="line-height:1.45">Faltam <b class="num" style="color:var(--tx)">${fmt(TS)}</b> seções, com <b class="num" style="color:var(--tx)">${fmtMi(TE)}</b> eleitores aptos, ou cerca de <b class="num" style="color:var(--tx)">${fmtMi(T)}</b> votos a apurar.</div>
+   <div class="ftab">${rows.map(tr).join('')}</div>
    ${rows.length>6?`<button class="xbtn" id="ftmore" style="margin:10px 0 0">Mostrar todos (${rows.length})</button>`:''}
-   <p class="sm mut" style="margin-top:10px;line-height:1.4">Ordem: onde falta mais eleitorado. "Lidera lá" é o resultado já apurado em cada lugar e a vantagem, em pontos, sobre o segundo colocado.</p></div>`;
+   <p class="sm mut" style="margin-top:10px;line-height:1.4">Ordem: onde há mais votos a apurar. Votos estimados pelo comparecimento já observado em cada lugar. O percentual em destaque é a fatia de cada lugar em tudo o que falta no país, não o quanto falta dentro dele. "Lidera" é o resultado já apurado e a vantagem, em pontos.</p></div>`;
 }
 /* coloca um cartão na coluna da esquerda, logo após a composição dos votos (v6.4) */
 function placeLeft(id,html,first){
@@ -1352,7 +1357,7 @@ async function makePng(){
     for(const sp of $('legend').children){const i=sp.querySelector('i'),txt=sp.textContent.trim().replace(/\s+/g,' '),w=g.measureText(txt).width+34;if(x+w>W-40){x=40;y+=32}
       if(i){const col=getComputedStyle(i).backgroundColor;if(col&&col!=='rgba(0, 0, 0, 0)'){g.fillStyle=col;g.fillRect(x,y-14,14,14)}else if(/gradient/.test(getComputedStyle(i).backgroundImage)){const m=getComputedStyle(i).backgroundImage.match(/rgba?\([^)]+\)|#[0-9a-f]{3,6}/i);if(m){g.fillStyle=m[0];g.fillRect(x,y-14,14,14);g.strokeStyle='#05070c';g.lineWidth=2;for(let k=-14;k<14;k+=5){g.beginPath();g.moveTo(x+k,y);g.lineTo(x+k+14,y-14);g.stroke()}}}else if(/245, 185, 66/.test(getComputedStyle(i).boxShadow)){g.strokeStyle='#f5b942';g.lineWidth=2;g.strokeRect(x+1,y-13,12,12)}}
       g.fillStyle='#9aa8c4';g.fillText(txt,x+(i?22:0),y);x+=w+18}
-    g.fillStyle='#5d6b88';g.font='500 17px sans-serif';g.fillText('Desenvolvido por Luciano Victor com apoio de IA (Claude, Anthropic)  ·  v. 6.8  ·  Fonte: TSE e IBGE  ·  '+$('stamp').textContent,40,1372);
+    g.fillStyle='#5d6b88';g.font='500 17px sans-serif';g.fillText('Desenvolvido por Luciano Victor com apoio de IA (Claude, Anthropic)  ·  v. 6.9  ·  Fonte: TSE e IBGE  ·  '+$('stamp').textContent,40,1372);
     const blob=await new Promise(ok=>cv.toBlob(ok,'image/png'));URL.revokeObjectURL(url);return blob;
   }
 }
