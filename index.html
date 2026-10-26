@@ -244,7 +244,7 @@ header{gap:12px;flex-wrap:nowrap}.brand{white-space:nowrap}.brand small{display:
   </section>
   <section class="col r" id="colR"><div id="layerBox" class="stack"></div><div id="mainBox" class="stack"></div><div id="trendBox" class="stack"></div></section>
 </main>
-<footer><span>Fonte: TSE · resultados.tse.jus.br · malhas: IBGE. Dados em apuração oficial; podem sofrer retificação.</span><span class="cred">Desenvolvido por <b>Luciano Victor</b> com apoio de IA (Claude, Anthropic) · v. 6.9</span><span id="foot"></span><img src="https://hits.sh/luciano-victor.github.io/apuracao2026.svg" alt="" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></footer><!-- contador de acessos (v6.1): uma contagem por abertura da página; estatísticas em https://hits.sh/luciano-victor.github.io/apuracao2026/ -->
+<footer><span>Fonte: TSE · resultados.tse.jus.br · malhas: IBGE. Dados em apuração oficial; podem sofrer retificação.</span><span class="cred">Desenvolvido por <b>Luciano Victor</b> com apoio de IA (Claude, Anthropic) · v. 7.0</span><span id="foot"></span><img src="https://hits.sh/luciano-victor.github.io/apuracao2026.svg" alt="" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></footer><!-- contador de acessos (v6.1): uma contagem por abertura da página; estatísticas em https://hits.sh/luciano-victor.github.io/apuracao2026/ -->
 </div>
 <div class="tip" id="tip"></div>
 
@@ -293,11 +293,33 @@ function dataUrl(uf,cg,mun,t){
   return `${BASE}/${e}/dados/${uf}/${mun?uf+mun:uf}-c${cd}-e00${e}-u.jws`;
 }
 const brpres=t=>`${BASE}/${eleOf('pres',t)}/dados/br/br-c0001-e00${eleOf('pres',t)}-u.jws`;
+/* ===== acesso ao TSE (v7.0) =====
+   O TSE permite até 100 requisições por segundo por IP e bloqueia o IP por 10 minutos quando o limite é
+   excedido; cada nova tentativa durante o bloqueio reinicia a contagem. Por isso: no máximo 20 requisições
+   por segundo e 6 simultâneas, e, ao receber 429, pausa total de 11 minutos (lembrada entre recargas). */
+const TSE_RPS=25,TSE_PAR=6,TSE_PAUSA=11*60*1000;
+let tseBlock=0;try{tseBlock=+localStorage.getItem('tseBlock')||0}catch(e){}
+const tseQ=[];let tseAtivos=0,tseUlt=0;
+const tsePausado=()=>Date.now()<tseBlock;
+const hhmm=t=>new Date(t).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+function tseAviso(){if(!tsePausado())return;$('dot').classList.add('err');const st=$('stamp');if(st){st.textContent='TSE: consultas pausadas até '+hhmm(tseBlock);st.title='O TSE bloqueou temporariamente esta conexão por excesso de consultas. O painel aguarda e retoma sozinho. Não recarregue: cada nova tentativa reinicia o bloqueio.'}}
+function tseBloqueou(){tseBlock=Date.now()+TSE_PAUSA;try{localStorage.setItem('tseBlock',String(tseBlock))}catch(e){}tseQ.splice(0).forEach(q=>q.no(new Error('pausa')));tseAviso();toast('O TSE limitou as consultas desta conexão. O painel pausa até '+hhmm(tseBlock)+' e retoma sozinho.')}
+function tseFetch(url,opt){
+  return new Promise((ok,no)=>{if(tsePausado())return no(new Error('pausa'));tseQ.push({url,opt,ok,no});tseBomba()});
+}
+function tseBomba(){
+  while(tseQ.length&&tseAtivos<TSE_PAR){
+    if(tsePausado()){tseQ.splice(0).forEach(q=>q.no(new Error('pausa')));return}
+    const espera=tseUlt+1000/TSE_RPS-Date.now();if(espera>0){setTimeout(tseBomba,espera);return}
+    const q=tseQ.shift();tseAtivos++;tseUlt=Date.now();
+    fetch(q.url,q.opt).then(r=>{if(r.status===429){tseBloqueou();throw new Error('429')}return r}).then(q.ok,q.no).finally(()=>{tseAtivos--;tseBomba()});
+  }
+}
 async function getJ(url,fresh){
   const hit=cache.get(url);if(hit&&!fresh)return hit.d;
-  if(inflight.has(url)&&!fresh)return inflight.get(url);
+  if(inflight.has(url))return inflight.get(url);/* nunca duas consultas simultâneas ao mesmo arquivo */
   const sig=(typeof AbortSignal!=='undefined'&&AbortSignal.timeout)?AbortSignal.timeout(20000):undefined;/* TSE lento: desiste em 20 s e tenta no próximo ciclo */
-  const p=fetch(url,{cache:fresh?'no-cache':'default',signal:sig}).then(async r=>{
+  const p=(/resultados\.tse\.jus\.br/.test(url)?tseFetch:fetch)(url,{cache:fresh?'no-cache':'default',signal:sig}).then(async r=>{
     if(!r.ok)throw new Error(r.status);
     let d=dec(await r.text());if(/-c000[678]-/.test(url))d=slim(d);cache.set(url,{d,at:Date.now()});try{jrec(url,d);if(url===brpres(2))lastHg=(d.dg||'')+' '+(d.hg||'')}catch(e){}return d;
   }).finally(()=>inflight.delete(url));
@@ -787,6 +809,7 @@ async function drawCards(tok,fresh){
     $('dot').classList.add('err');
     /* atualização periódica: mantém os últimos números válidos na tela e só sinaliza a falha */
     if(fresh===true&&L.querySelector('.card')&&!L.querySelector('.sk')&&!L.querySelector('.card.err')){$('stamp').title='A última leitura do TSE falhou; nova tentativa em até 45 segundos. Os números exibidos são da leitura anterior.';return}
+    if(e.message==='429'||e.message==='pausa'){tseAviso();L.innerHTML=`<div class="card err">O TSE bloqueou temporariamente as consultas desta conexão por excesso de acessos. O painel aguarda e volta sozinho às ${hhmm(tseBlock)}. Não recarregue a página: cada nova tentativa reinicia o bloqueio.</div>`;R.innerHTML='';return}
     const code=/^\d{3}$/.test(e.message)?' (código '+e.message+')':'';
     L.innerHTML=`<div class="card err">${S.turn===2&&e.message==='404'?'Sem 2º turno nesta disputa, ou dados ainda não publicados.':'Não foi possível ler o TSE agora'+code+'. Nova tentativa automática em até 45 segundos.'}</div>`;R.innerHTML=''}
 }
@@ -913,7 +936,7 @@ function updLay(){for(const e of document.querySelectorAll('.layers,.tabs')){con
 document.querySelectorAll('.layers,.tabs').forEach(e=>{e.addEventListener('scroll',updLay,{passive:true});e.addEventListener('wheel',ev=>{if(e.scrollWidth>e.clientWidth&&Math.abs(ev.deltaY)>Math.abs(ev.deltaX)){e.scrollLeft+=ev.deltaY;ev.preventDefault()}},{passive:false})});
 function updOvf(){updLay();for(const c of document.querySelectorAll('.col')){const more=c.scrollHeight>c.clientHeight+4&&c.scrollTop+c.clientHeight<c.scrollHeight-6;c.classList.toggle('ovf',more&&innerWidth>1100)}}
 document.querySelectorAll('.col').forEach(c=>c.addEventListener('scroll',updOvf,{passive:true}));addEventListener('resize',updOvf);setInterval(updOvf,1000);
-function stamp(d){if(!d)return;$('stamp').title='';const z=!N(d.s?.st);const el=$('stamp');el.textContent=z?`${S.turn===2?'2º turno · ':''}aguardando apuração`:`TSE ${String(d.dg||'').slice(0,5)} ${d.hg}`;el.title=z?'':`Totalização do TSE em ${d.dg} às ${d.hg}`;$('dot').classList.remove('err')}
+function stamp(d){if(!d)return;if(tsePausado()){tseAviso();return}$('stamp').title='';const z=!N(d.s?.st);const el=$('stamp');el.textContent=z?`${S.turn===2?'2º turno · ':''}aguardando apuração`:`TSE ${String(d.dg||'').slice(0,5)} ${d.hg}`;el.title=z?'':`Totalização do TSE em ${d.dg} às ${d.hg}`;$('dot').classList.remove('err')}
 
 /* ===== buscas (Google Trends removido na v5.3) ===== */
 function renderTrend(){$('trendBox').innerHTML=''}
@@ -947,7 +970,7 @@ function drawTurns(){
 /* ===== configuração do TSE e UFs com 2º turno (v5.3) ===== */
 async function loadCfg(){
   try{
-    const r=await fetch('https://resultados.tse.jus.br/oficial/comum/config/ele-c.json',{cache:'no-cache'});if(!r.ok)return;
+    const r=await tseFetch('https://resultados.tse.jus.br/oficial/comum/config/ele-c.json',{cache:'no-cache'});if(!r.ok)return;
     const tx=await r.text();let j;try{j=JSON.parse(tx)}catch(e){j=dec(tx)}
     const els=[];(j.pl||[]).forEach(p=>(p.e||[]).forEach(e=>els.push(e)));
     for(const C of Object.values(CARGOS)){const e=els.find(x=>String(x.cd)===C.ele);if(e&&e.cdt2&&C.ele2)C.ele2=String(e.cdt2)}
@@ -964,7 +987,7 @@ function markUFs(){
   for(const o of sel.options){if(o.value==='br'||o.value==='zz')continue;const no=on&&!S.govT2.has(o.value);o.textContent=UFS[o.value][0]+(no?' (eleito no 1º turno)':'');o.disabled=false}
 }
 async function probeT2(){
-  let ok=false;try{const r=await fetch(brpres(2),{cache:'no-cache'});ok=r.ok}catch(e){}
+  if(tsePausado())return;let ok=false;try{const r=await tseFetch(brpres(2),{cache:'no-cache'});ok=r.ok}catch(e){}
   const was=S.t2ok;S.t2ok=ok;drawTurns();
   if(ok&&!was&&S.turn===1&&(S.wantT2||new Date()>=T2_DATE)){S.wantT2=false;S.autoT2=true;go({turn:2,mun:null})}
 }
@@ -1357,7 +1380,7 @@ async function makePng(){
     for(const sp of $('legend').children){const i=sp.querySelector('i'),txt=sp.textContent.trim().replace(/\s+/g,' '),w=g.measureText(txt).width+34;if(x+w>W-40){x=40;y+=32}
       if(i){const col=getComputedStyle(i).backgroundColor;if(col&&col!=='rgba(0, 0, 0, 0)'){g.fillStyle=col;g.fillRect(x,y-14,14,14)}else if(/gradient/.test(getComputedStyle(i).backgroundImage)){const m=getComputedStyle(i).backgroundImage.match(/rgba?\([^)]+\)|#[0-9a-f]{3,6}/i);if(m){g.fillStyle=m[0];g.fillRect(x,y-14,14,14);g.strokeStyle='#05070c';g.lineWidth=2;for(let k=-14;k<14;k+=5){g.beginPath();g.moveTo(x+k,y);g.lineTo(x+k+14,y-14);g.stroke()}}}else if(/245, 185, 66/.test(getComputedStyle(i).boxShadow)){g.strokeStyle='#f5b942';g.lineWidth=2;g.strokeRect(x+1,y-13,12,12)}}
       g.fillStyle='#9aa8c4';g.fillText(txt,x+(i?22:0),y);x+=w+18}
-    g.fillStyle='#5d6b88';g.font='500 17px sans-serif';g.fillText('Desenvolvido por Luciano Victor com apoio de IA (Claude, Anthropic)  ·  v. 6.9  ·  Fonte: TSE e IBGE  ·  '+$('stamp').textContent,40,1372);
+    g.fillStyle='#5d6b88';g.font='500 17px sans-serif';g.fillText('Desenvolvido por Luciano Victor com apoio de IA (Claude, Anthropic)  ·  v. 7.0  ·  Fonte: TSE e IBGE  ·  '+$('stamp').textContent,40,1372);
     const blob=await new Promise(ok=>cv.toBlob(ok,'image/png'));URL.revokeObjectURL(url);return blob;
   }
 }
@@ -1483,13 +1506,17 @@ const clearCand=()=>go({cand:null,layer:'lider',cargo:S.cargo});
 
 /* ===== atualização periódica ===== */
 let next=45,lastHg=null,watching=false;
+/* apuração do 2º turno concluída: dados finais, sem necessidade de leitura frequente */
+const apFinal=()=>{const d=cache.get(brpres(2))?.d;return !!(d&&N(d.s?.pstn)>=100)};
 setInterval(async()=>{
   if(watching||S.turn!==2||!S.t2ok||next<=3)return;watching=true;
-  try{const r=await fetch(brpres(2),{cache:'no-cache'});if(r.ok){const d=dec(await r.text());const h=(d.dg||'')+' '+(d.hg||'');if(lastHg&&h!==lastHg)next=1;lastHg=h}}catch(e){}finally{watching=false}
+  if(tsePausado()||apFinal())return;
+  try{const r=await tseFetch(brpres(2),{cache:'no-cache'});if(r.ok){const d=dec(await r.text());const h=(d.dg||'')+' '+(d.hg||'');if(lastHg&&h!==lastHg)next=1;lastHg=h}}catch(e){}finally{watching=false}
 },15000);
 setInterval(()=>{
-  next--;$('foot').textContent=next>0?`próxima leitura em ${next}s`:'lendo…';
-  if(next>0)return;next=45;
+  if(tsePausado()){$('foot').textContent='consultas pausadas até '+hhmm(tseBlock);tseAviso();return}
+  next--;$('foot').textContent=next>0?(next>90?`próxima leitura em ${Math.ceil(next/60)} min`:`próxima leitura em ${next}s`):'lendo…';
+  if(next>0)return;next=apFinal()?600:45;
   if(!S.t2ok)probeT2();
   else if(S.turn===1&&!S.autoT2&&new Date()>=T2_DATE){S.autoT2=true;go({turn:2,mun:null});return}
   /* o gráfico de acompanhamento só busca o que a atualização do mapa não trouxe, depois dela (evita baixar o mesmo arquivo duas vezes) */
