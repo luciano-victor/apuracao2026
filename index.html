@@ -983,6 +983,7 @@ function mapTitle(){
 }
 function mapTitle0(){
   const L=S.layer;
+  if(ANALISE&&S.mun&&S.uf!=='br'&&S.uf!=='zz')return 'Locais de votação · '+SECM[S.secMode][0];
   if(L==='lider')return S.uf==='br'&&isProp(S.cargo)?`${cargoNome(S.cargo,S.uf)} · partido mais votado`:(S.uf!=='br'&&isProp(S.cargo)?`Mapa: ${isProp(S.mapCargo)?'candidato mais votado · ':''}${cargoNome(S.mapCargo,S.uf)}`:cargoNome(S.mapCargo,S.uf));
   if(L==='cand'&&S.cand)return `${S.cand.nm} · ${cargoNome(S.cand.cg,S.cand.uf||S.uf)}`;
   const ln=LAYERS.find(x=>x[0]===L)[1];
@@ -1023,7 +1024,7 @@ function markUFs(){
 async function probeT2(){
   if(tsePausado())return;let ok=false;try{const r=await tseFetch(brpres(2),{cache:'no-cache'});ok=r.ok}catch(e){}
   const was=S.t2ok;S.t2ok=ok;drawTurns();
-  if(ok&&!was&&S.turn===1&&(S.wantT2||new Date()>=T2_DATE)){S.wantT2=false;S.autoT2=true;go({turn:2,mun:null})}
+  if(ok&&!was&&S.turn===1&&(S.wantT2||new Date()>=T2_DATE)){S.wantT2=false;S.autoT2=true;go({turn:2})}
 }
 
 /* ===== hexágonos ===== */
@@ -1631,7 +1632,7 @@ function secBox(box){
    <div class="kv" style="margin-top:10px"><div class="l"><span>Locais · seções · eleitores</span><b class="num">${L.length} · ${tot.s} · ${fmt(tot.el)}</b></div><div class="l"><span>${nm} · ${t}º turno 2026</span><b class="num">${pcN(shTw(tot.a,t))}</b></div><div class="l"><span>Lula · ${t}º turno 2022</span><b class="num">${pcN(shTw(tot.p,t))}</b></div></div>
    ${ranked.length?`<div style="margin-top:12px"><div class="sm mut" style="margin-bottom:6px">Maiores valores · ${SECM[S.secMode][0].toLowerCase()}</div><div class="rk">${ranked.slice(0,5).map(row).join('')}</div></div><div style="margin-top:10px"><div class="sm mut" style="margin-bottom:6px">Menores valores</div><div class="rk">${ranked.slice(-5).reverse().map(row).join('')}</div></div>`:''}
    <p class="sm mut" style="margin-top:10px;line-height:1.4">Fonte: TSE, dados abertos (votação por seção de 2026 e 2022, locais de votação 2026${hasPf?' e perfil do eleitorado por seção':''}). ${hasPf?'':'Perfil do eleitorado por local disponível, por enquanto, só no Espírito Santo. '}Comparação com 2022 casa as seções pelo número.</p></div>`;
-  const ss=$('secsel');if(ss)ss.onchange=()=>{S.secMode=ss.value;drawLocs();secBox(box)};
+  const ss=$('secsel');if(ss)ss.onchange=()=>{S.secMode=ss.value;$('mv').textContent=mapTitle();drawLocs();secBox(box)};
   box.querySelectorAll('.it[data-i]').forEach(e=>e.onclick=()=>{S.loc=+e.dataset.i;drawLocs();secBox(box)});
   const x=$('locX');if(x)x.onclick=()=>{S.loc=null;drawLocs();secBox(box)};
 }
@@ -1935,7 +1936,7 @@ setInterval(()=>{
   next--;$('foot').textContent=next>0?(next>90?`próxima leitura em ${Math.ceil(next/60)} min`:`próxima leitura em ${next}s`):'lendo…';
   if(next>0)return;next=apFinal()?600:45;
   if(!S.t2ok)probeT2();
-  else if(S.turn===1&&!S.autoT2&&new Date()>=T2_DATE){S.autoT2=true;go({turn:2,mun:null});return}
+  else if(S.turn===1&&!S.autoT2&&new Date()>=T2_DATE){S.autoT2=true;go({turn:2});return}
   /* o gráfico de acompanhamento só busca o que a atualização do mapa não trouxe, depois dela (evita baixar o mesmo arquivo duas vezes) */
   render(true).catch(()=>$('dot').classList.add('err')).finally(()=>jacPull().catch(()=>{}));
 },1000);
