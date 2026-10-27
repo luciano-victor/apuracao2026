@@ -125,7 +125,10 @@ footer{padding:9px 22px;border-top:1px solid var(--line);color:var(--tx3);font-s
 .tl{display:block;margin-top:12px;color:var(--acc);font-size:12.5px;text-decoration:none}.tl:hover,.tl2:hover{text-decoration:underline}
 .tl2{color:inherit;text-decoration:none}
 .cred{color:var(--tx2);white-space:nowrap}.cred b{color:var(--acc);font-weight:600}footer{flex-wrap:wrap}
-.turns{display:flex;gap:3px;background:var(--panel);border:1px solid var(--line);padding:3px;border-radius:12px}.turns button{background:none;border:0;padding:6px 11px;border-radius:9px;color:var(--tx2);cursor:pointer;font-size:12.5px;white-space:nowrap}.turns button.on{background:var(--panel2);color:var(--acc)}.turns button:disabled{opacity:.35;cursor:not-allowed}
+.turns{display:flex;gap:3px;background:var(--panel);border:1px solid var(--line);padding:3px;border-radius:12px}.turns button{background:none;border:0;padding:6px 11px;border-radius:9px;color:var(--tx2);cursor:pointer;font-size:12.5px;white-space:nowrap}.turns button.on{background:var(--panel2);color:var(--acc)}
+.modes{display:flex;gap:3px;background:var(--panel);border:1px solid var(--line);padding:3px;border-radius:12px;flex:0 0 auto}.modes a{padding:6px 11px;border-radius:9px;color:var(--tx2);font-size:12.5px;text-decoration:none;white-space:nowrap}.modes a.on{background:var(--panel2);color:var(--acc)}.modes a:hover{color:var(--tx1,#e8edf7)}
+.ibrow{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:7px 0;border-top:1px solid var(--line);cursor:pointer}.ibrow:first-of-type{border-top:0}.ibrow:hover .ibn{color:var(--acc)}.ibrow .ibn{font-size:12.5px}.ibrow .ibv{font-weight:700;text-align:right}.ibrow .ibc{grid-column:1/3;font-size:11px;color:var(--tx3)}.ibg{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);margin:12px 0 2px}.ibrow.on .ibn{color:var(--acc)}
+.ibsel{width:100%;background:var(--panel2);color:inherit;border:1px solid var(--line);border-radius:9px;padding:7px 9px;font-size:13px}.iblead{font-size:12.5px;line-height:1.45;margin-top:8px}.iblead b{color:var(--acc)}.turns button:disabled{opacity:.35;cursor:not-allowed}
 .srch{position:relative}.srch input{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:7px 11px;color:var(--tx);width:160px;font-size:12.5px}.srch input:focus{outline:0;border-color:var(--acc)}
 .qres{display:none;position:absolute;top:38px;left:0;width:340px;max-height:340px;overflow:auto;background:#0a0e16;border:1px solid var(--line2);border-radius:12px;z-index:30;box-shadow:0 12px 40px rgba(0,0,0,.5)}.qi{padding:8px 12px;cursor:pointer;display:flex;justify-content:space-between;gap:10px;font-size:12.5px}.qi:hover{background:var(--panel2)}.qi span{color:var(--tx3);font-size:11px;white-space:nowrap}
 .mapwrap .acts{position:absolute;right:16px;top:102px;display:flex;gap:4px}.acts button{background:rgba(15,20,32,.88);border:1px solid var(--line);border-radius:9px;padding:6px 10px;color:var(--tx2);cursor:pointer;font-size:12px}.acts button:hover{border-color:var(--acc);color:var(--tx)}
@@ -140,7 +143,7 @@ header{gap:12px;flex-wrap:nowrap}.brand{white-space:nowrap}.brand small{display:
   header{padding:10px 12px;gap:8px}.brand{font-size:12px}
   .srch{flex:1 1 100%;order:5}.srch input,.srch input:focus{width:100%}.qres{width:100%}
   .scope{order:4}.live{order:6;width:100%}
-  .turns{order:3}
+  .turns{order:3}.modes{order:2}.modes a{padding:5px 9px;font-size:12px}
   .mapwrap{height:68vh;border-radius:16px}
   .maptitle{left:12px;top:10px;right:96px}.maptitle .v{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .back{right:10px;top:10px;padding:6px 10px;font-size:12px}
@@ -223,6 +226,7 @@ header{gap:12px;flex-wrap:nowrap}.brand{white-space:nowrap}.brand small{display:
 <div class="app">
 <header>
   <div class="brand"><b id="brandk">Apuração</b> 2026 <small>1º turno · 04/10/2026</small></div>
+  <div class="modes" id="modes"><a href="./" data-m="ap" title="Resultados da eleição, como na apuração">Apuração</a><a href="analise.html" data-m="an" title="Indicadores do IBGE e comparação com 2022">Análise</a></div>
   <div class="tabs" id="tabs"></div>
   <div class="turns" id="turns"></div>
   <div class="srch"><input id="q" type="search" placeholder="Candidato ou município" autocomplete="off"><div class="qres" id="qres"></div></div>
@@ -239,12 +243,12 @@ header{gap:12px;flex-wrap:nowrap}.brand{white-space:nowrap}.brand small{display:
     <svg id="map" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid meet"></svg>
     <div class="legend" id="legend"></div>
     <div class="layers" id="layers"></div>
-    <div class="acts"><button id="bMode" title="Alternar entre a apuração e a análise (comparação com 2022 e indicadores do IBGE)">Análise</button><button id="bJac" title="Gráfico de evolução da apuração (boca de jacaré)">Evolução</button><button id="bShare" title="Compartilhar esta visão">Compartilhar</button><button id="bWa" title="Enviar pelo WhatsApp">WhatsApp</button><button id="bPng" title="Baixar o mapa como imagem">PNG</button><button id="bCsv" title="Baixar a tabela desta visão">CSV</button></div>
+    <div class="acts"><button id="bJac" title="Gráfico de evolução da apuração (boca de jacaré)">Evolução</button><button id="bShare" title="Compartilhar esta visão">Compartilhar</button><button id="bWa" title="Enviar pelo WhatsApp">WhatsApp</button><button id="bPng" title="Baixar o mapa como imagem">PNG</button><button id="bCsv" title="Baixar a tabela desta visão">CSV</button></div>
     <div class="prog" id="prog"><span id="progtx"></span><div><b id="progbar"></b></div></div>
   </section>
   <section class="col r" id="colR"><div id="layerBox" class="stack"></div><div id="mainBox" class="stack"></div><div id="trendBox" class="stack"></div></section>
 </main>
-<footer><span>Fonte: TSE · resultados.tse.jus.br · malhas: IBGE. Dados em apuração oficial; podem sofrer retificação.</span><span class="cred">Desenvolvido por <b>Luciano Victor</b> com apoio de IA (Claude, Anthropic) · v. 7.2</span><span id="foot"></span><img src="https://hits.sh/luciano-victor.github.io/apuracao2026.svg" alt="" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></footer><!-- contador de acessos (v6.1): uma contagem por abertura da página; estatísticas em https://hits.sh/luciano-victor.github.io/apuracao2026/ -->
+<footer><span>Fonte: TSE · resultados.tse.jus.br · malhas: IBGE. Dados em apuração oficial; podem sofrer retificação.</span><span class="cred">Desenvolvido por <b>Luciano Victor</b> com apoio de IA (Claude, Anthropic) · v. 7.3</span><span id="foot"></span><img src="https://hits.sh/luciano-victor.github.io/apuracao2026.svg" alt="" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></footer><!-- contador de acessos (v6.1): uma contagem por abertura da página; estatísticas em https://hits.sh/luciano-victor.github.io/apuracao2026/ -->
 </div>
 <div class="tip" id="tip"></div>
 
@@ -397,7 +401,7 @@ function project(items){
 /* ===== estado ===== */
 /* v7.2: o mesmo arquivo serve duas páginas. index.html = apuração; analise.html = análise (2022 e IBGE). */
 const ANALISE=/analise/i.test(location.pathname),AN_ONLY=['v22','m22','ind','res'];
-{const keep=ANALISE?['lider','margem','abst','v22','m22','ind','res','cand']:null;const f=LAYERS.filter(([k])=>ANALISE?keep.includes(k):!AN_ONLY.includes(k));LAYERS.splice(0,LAYERS.length,...f)}
+{const keep=['ind','res','v22','m22','lider','cand'];const f=ANALISE?keep.map(k=>LAYERS.find(x=>x[0]===k)).filter(Boolean):LAYERS.filter(([k])=>!AN_ONLY.includes(k));LAYERS.splice(0,LAYERS.length,...f)}
 const S={turn:1,cand:null,hex:false,t2ok:false,cargo:'pres',uf:'br',mun:null,mapCargo:'pres',layer:'lider',tok:0,munList:{},fin:null,elim:[],tr:{}};
 const MAJ=['pres','gov','sen'];
 const isProp=cg=>cg==='df'||cg==='de';
@@ -559,7 +563,7 @@ function fillUnit(uf,m){
   if(L==='abstvar'){const r=abstVar(uf,m);if(r==null)return DARK;return r>=0?mix('#ff9f45',clamp(.2+r/6*.8,.2,1)):mix('#7cf2c8',clamp(.2+(-r)/6*.8,.2,1))}
   if(L==='virada'){const v=viradaVal(uf,m);if(!v)return DARK;const c=colorOf(v.sg2);return v.flip?pat(c,mix(c,.3)):mix(c,.24)}
   if(L==='ind'||L==='res'){const k=ibKey(uf,m),M=S.ibm;if(!M||!M.u[k])return DARK;const u=M.u[k];
-    if(L==='ind')return mix('#38c8e8',clamp(.12+u.q*.88,.12,1));const P=pair26();if(u.res==null||!P)return DARK;return mix(colorOf(u.res>=0?P[0].sg:P[1].sg),clamp(.2+Math.abs(u.res)/8*.8,.2,1))}
+    if(L==='ind')return u.q==null?DARK:mix('#38c8e8',clamp(.12+u.q*.88,.12,1));const P=pair26();if(u.res==null||!P)return DARK;return mix(colorOf(u.res>=0?P[0].sg:P[1].sg),clamp(.2+Math.abs(u.res)/8*.8,.2,1))}
   if(L==='v22'){const r=c22(uf,m);if(!r)return DARK;return mix(colorOf(r.d>=0?r.sgA:r.sgB),clamp(.25+Math.abs(r.d)/12*.75,.25,1))}
   if(L==='m22'){const r=c22(uf,m);if(!r)return DARK;const c=colorOf(r.w26);return r.flip?pat(c,mix(c,.3)):mix(c,.24)}
   if(L==='desl'){const r=deslVal(uf,m);if(!r)return DARK;return mix(colorOf(r.d>=0?r.sgA:r.sgB),clamp(.28+Math.abs(r.d)/8*.72,.28,1))}
@@ -732,6 +736,7 @@ function listRows(rows,fn){return `<div class="rk">${rows.map(fn).join('')}</div
 const rowU=(nome,val,sub)=>`<div class="it"><span class="pos"></span><span class="nm">${esc(nome)}</span><span class="pc">${val}</span><div class="vt">${sub}</div></div>`;
 async function layerBox(){
   const L=S.layer,box=$('layerBox');
+  if(ANALISE&&L==='lider'){box.innerHTML='';return}
   if(L==='lider'&&S.uf==='br'&&S.cargo==='pres'){await projBox(box);if(S.layer!=='lider')return;box.insertAdjacentHTML('beforeend',regiaoHtml());{const z=$('rgz');if(z)z.onclick=()=>go({uf:'zz',mun:null,cargo:'pres'})}placeLeft('faltam',faltamHtml(),true);bindFaltam();return}
   if(L==='andamento'){andamentoBox(box);return}
   if(L==='cand'){candBox(box);return}
@@ -800,7 +805,7 @@ function mapTip(e,id){
   else if(L==='abstvar'){const a=leaders[K(S.mapCargo,uf,m,1)],b=leaders[K(S.mapCargo,uf,m,2)];body=!a||!b?'<span class="mut">sem dados dos dois turnos</span>':`<div class="row"><span>1º turno</span><b class="num">${pc(a.abs,1)}</b></div><div class="row"><span>2º turno</span><b class="num">${pc(b.abs,1)}</b></div><div class="mut" style="margin-top:6px">variação ${b.abs-a.abs>=0?'+':''}${(b.abs-a.abs).toFixed(2).replace('.',',')} p.p.</div>`}
   else if(L==='bolhas'){const l=leaders[K(S.mapCargo,uf,m)];body=!l?'<span class="mut">carregando…</span>':`<div class="row"><span>${dot(colorOf(l.sg))}${esc(l.nm)}</span><b class="num">${pc(l.p)}</b></div><div class="mut" style="margin-top:6px">Vantagem: ${fmt(l.mv)} votos${l.second?' sobre '+esc(l.second.nm):''}</div>`}
   else if(L==='virada'){const v=viradaVal(uf,m);body=!v?'<span class="mut">sem dados dos dois turnos</span>':`<div class="row"><span>1º turno</span><b class="num">${esc(v.nm1.split(' ')[0])} · ${pc(v.s1,1)}</b></div><div class="row"><span>2º turno</span><b class="num">${esc(v.nm2.split(' ')[0])} · ${pc(v.s2,1)}</b></div><div class="mut" style="margin-top:6px">${v.flip?'<b style="color:var(--warn)">Virada</b> para '+esc(v.nm2):'Sem virada'}</div>`}
-  else if(L==='ind'||L==='res'){const u=S.ibm&&S.ibm.u[ibKey(uf,m)],I=IND[S.ind],P=pair26();body=!u?`<span class="mut">${IB===false?'indicadores do IBGE indisponíveis':uf==='zz'?'sem indicadores do IBGE no exterior':'carregando…'}</span>`:`<div class="row"><span>${I[1]}</span><b class="num">${I[3](u.x[S.ind])}</b></div>`+(u.y!=null&&P?`<div class="row"><span>${dot(colorOf(P[0].sg))}${esc(P[0].nm.split(' ')[0])}</span><b class="num">${pc(u.y,1)}</b></div>`:'')+(L==='res'&&u.res!=null?`<div class="mut" style="margin-top:6px">esperado ${pc(u.yh,1)} · ${u.res>=0?'+':''}${u.res.toFixed(1).replace('.',',')} p.p.</div>`:'')}
+  else if(L==='ind'||L==='res')body=tipIB(uf,m);
   else if(L==='v22'||L==='m22'){const r=c22(uf,m);body=!r?`<span class="mut">${R22===false?'dados de 2022 indisponíveis':'carregando…'}</span>`:`<div class="row"><span>${dot(colorOf(r.sgA))}${esc(r.nmA.split(' ')[0])} 2026</span><b class="num">${pc(r.s26,1)}</b></div><div class="row mut"><span>Lula 2022</span><span class="num">${pc(r.s22,1)}</span></div><div class="mut" style="margin-top:6px">variação ${r.d>=0?'+':''}${r.d.toFixed(2).replace('.',',')} p.p.${r.flip?' · <b style="color:var(--warn)">mudou de lado</b>':''}</div>`}
   else if(L==='desl'){const r=deslVal(uf,m);body=!r?'<span class="mut">sem dados do 2º turno</span>':`<div class="row"><span>${dot(colorOf(r.sgA))}${esc(r.nmA)}</span><b class="num">${pc(r.s2,1)}</b></div><div class="mut" style="margin-top:6px">1º turno: ${pc(r.s1,1)} · variação ${r.d>=0?'+':''}${r.d.toFixed(2).replace('.',',')} p.p.</div>`}
   else{const l=leaders[K(S.mapCargo,uf,m)];
@@ -823,10 +828,10 @@ async function drawCards(tok,fresh){
   const L=$('colL'),R=$('mainBox');
   if(!L.innerHTML||fresh!==true){L.innerHTML=skel(3);R.innerHTML=skel(3)}
   try{
-    if(S.uf==='br'&&S.cargo!=='pres'){await cardsNational(tok,fresh);if(tok===S.tok)addPix();return}
+    if(S.uf==='br'&&S.cargo!=='pres'){await cardsNational(tok,fresh);if(tok===S.tok){if(ANALISE){anLeft();return}addPix()}return}
     const d=S.uf==='br'?await getJ(brpres(),fresh):(S.mun?await getMun(S.uf,S.mun,S.cargo,fresh):await getUF(S.uf,S.cargo,fresh));
     if(tok!==S.tok)return;
-    cardsFor(d);addPix();if(!(S.uf==='br'&&S.cargo==='pres'))placeLeft('faltam','');
+    cardsFor(d);if(ANALISE){anLeft();return}addPix();if(!(S.uf==='br'&&S.cargo==='pres'))placeLeft('faltam','');
     if(S.uf==='br'&&S.cargo==='pres')getUF('zz','pres',fresh).catch(()=>{});
   }catch(e){
     if(tok!==S.tok)return;
@@ -1310,108 +1315,207 @@ function box22(box){
 }
 
 
-/* ===== indicadores do IBGE (v7.2) =====
-   Lidos da API de agregados do IBGE (Censo 2022 e PIB dos Municípios 2022), que libera acesso direto do navegador.
-   Três consultas, uma única vez; o resultado tratado fica guardado neste navegador.
-   Por município (código IBGE de 6 dígitos): [população, população urbana, taxa de alfabetização 15+, PIB em R$ mil]. */
-let IB=null,IBP=null;const IBS={};
-const IBURL='https://servicodados.ibge.gov.br/api/v3/agregados/';
-const IND={
-  pibpc:['pibpc','PIB per capita',v=>v[3]*1000/v[0],x=>'R$ '+fmt(Math.round(x)),true],
-  urb:['urb','Urbanização',v=>v[1]/v[0]*100,x=>pc(x,1),false],
-  alf:['alf','Alfabetização',v=>v[2],x=>pc(x,1),false],
-  pop:['pop','População',v=>v[0],x=>fmt(Math.round(x))+' hab.',true]};
-S.ind='pibpc';
+/* ===== indicadores do IBGE (v7.3) =====
+   Lidos da API de agregados do IBGE, que libera acesso direto do navegador: Censo 2022, PIB dos Municípios
+   (2022; estrutura da economia, 2021, último ano com o detalhamento por atividade). Onze consultas, uma única vez,
+   já com municípios (N6), UFs (N3) e Brasil (N1); o resultado tratado fica guardado neste navegador.
+   Chaves: município = código IBGE de 6 dígitos; UF = 2 dígitos; Brasil = "1". */
+let IB=null,IBP=null,IBN=0;
+const IBURL='https://servicodados.ibge.gov.br/api/v3/agregados/',IBLOC='localidades=N6[all]|N3[all]|N1[all]',IBVER='ibge22v3';
+const IBF=['pop','urbp','alf','pib','vab','agro','indu','adm','branca','preta','parda','cat','evg','semrel','dens','env','idmed','renda','pob','esg'];
+const IBQ=[
+  ['9923/periodos/2022/variaveis/93?classificacao=1[6795,1]',{pop:['93','6795'],urbp:['93','1']}],
+  ['9543/periodos/2022/variaveis/2513?classificacao=2[6794]|86[95251]|287[100362]',{alf:['2513']}],
+  ['5938/periodos/2022/variaveis/37?',{pib:['37']}],
+  ['5938/periodos/2021/variaveis/498|513|517|525?',{vab:['498'],agro:['513'],indu:['517'],adm:['525']}],
+  ['9605/periodos/2022/variaveis/1000093?classificacao=86[2776,2777,2779]',{branca:['1000093','2776'],preta:['1000093','2777'],parda:['1000093','2779']}],
+  ['10198/periodos/2022/variaveis/1000950?classificacao=133[95263,95277,2836]|58[95253]|59[93024]',{cat:['1000950','95263'],evg:['1000950','95277'],semrel:['1000950','2836']}],
+  ['4714/periodos/2022/variaveis/614?',{dens:['614']}],
+  ['9515/periodos/2022/variaveis/10612|10613?',{env:['10612'],idmed:['10613']}],
+  ['10295/periodos/2022/variaveis/13431?classificacao=2[6794]|86[95251]|58[95253]',{renda:['13431']}],
+  ['10296/periodos/2022/variaveis/1013604?classificacao=2[6794]|86[95251]|386[9681,9682]',{pob:['1013604','9681','9682']}],
+  ['9397/periodos/2022/variaveis/1000382?classificacao=458[72117]|11558[46290]|58[95253]',{esg:['1000382']}]];
+const pct1=x=>pc(x,1),rs=x=>'R$ '+fmt(Math.round(x));
+/* [chave, nome, grupo, função sobre o registro, formato, escala log, explicação, fonte, passo para a leitura] */
+const IND={};
+[['renda','Renda domiciliar per capita','Economia',v=>v.renda,rs,true,'Rendimento médio mensal por morador, somando o que todos os moradores do domicílio recebem e dividindo pelo número de moradores.','Censo 2022','dobrar'],
+ ['pob','Moradores com até ½ salário mínimo','Economia',v=>v.pob,pct1,false,'Percentual de moradores cuja renda domiciliar per capita é de até meio salário mínimo. É a medida de pobreza do Censo mais próxima do público do Bolsa Família.','Censo 2022',10],
+ ['pibpc','PIB per capita','Economia',v=>v.pib*1000/v.pop,rs,true,'Riqueza produzida no lugar dividida pela população. Mede a economia, não o bolso das pessoas: cidades com refinaria, usina ou porto têm PIB per capita alto mesmo com população pobre.','PIB dos Municípios 2022','dobrar'],
+ ['agro','Peso da agropecuária','Economia',v=>v.agro/v.vab*100,pct1,false,'Participação da agropecuária no valor adicionado da economia local. Indica o quanto a economia depende do campo.','PIB dos Municípios 2021',10],
+ ['indu','Peso da indústria','Economia',v=>v.indu/v.vab*100,pct1,false,'Participação da indústria (inclusive extrativa, energia e construção) no valor adicionado da economia local.','PIB dos Municípios 2021',10],
+ ['adm','Peso do setor público','Economia',v=>v.adm/v.vab*100,pct1,false,'Participação da administração pública, educação e saúde públicas e previdência no valor adicionado. Valores altos indicam economia dependente da prefeitura e de repasses.','PIB dos Municípios 2021',10],
+ ['alf','Alfabetização','Educação',v=>v.alf,pct1,false,'Percentual de pessoas de 15 anos ou mais que sabem ler e escrever um bilhete simples.','Censo 2022',5],
+ ['urb','Urbanização','Território',v=>v.urbp/v.pop*100,pct1,false,'Percentual da população que mora em área urbana.','Censo 2022',10],
+ ['dens','Densidade demográfica','Território',v=>v.dens,x=>fmt(Math.round(x*10)/10)+' hab./km²',true,'Habitantes por quilômetro quadrado. Separa metrópoles e cidades médias do interior pouco povoado.','Censo 2022','dobrar'],
+ ['esg','Esgoto adequado','Território',v=>v.esg,pct1,false,'Percentual de moradores em domicílios ligados à rede geral de esgoto ou pluvial, ou com fossa séptica ligada à rede. Bom retrato da infraestrutura urbana.','Censo 2022',10],
+ ['pop','População','Território',v=>v.pop,x=>fmt(Math.round(x))+' hab.',true,'Número de moradores.','Censo 2022','dobrar'],
+ ['idmed','Idade mediana','Demografia',v=>v.idmed,x=>Math.round(x)+' anos',false,'Idade que divide a população ao meio: metade é mais nova, metade é mais velha.','Censo 2022',5],
+ ['env','Índice de envelhecimento','Demografia',v=>v.env,x=>fmt(Math.round(x)),false,'Idosos de 65 anos ou mais para cada 100 crianças e adolescentes de até 14 anos.','Censo 2022',20],
+ ['negra','Pretos e pardos','Cor ou raça',v=>v.preta+v.parda,pct1,false,'Percentual da população que se declara preta ou parda, o que o IBGE chama de população negra.','Censo 2022',10],
+ ['branca','Brancos','Cor ou raça',v=>v.branca,pct1,false,'Percentual da população que se declara branca.','Censo 2022',10],
+ ['evg','Evangélicos','Religião',v=>v.evg,pct1,false,'Percentual das pessoas de 15 anos ou mais que se declaram evangélicas.','Censo 2022',10],
+ ['cat','Católicos','Religião',v=>v.cat,pct1,false,'Percentual das pessoas de 15 anos ou mais que se declaram católicas apostólicas romanas.','Censo 2022',10],
+ ['semrel','Sem religião','Religião',v=>v.semrel,pct1,false,'Percentual das pessoas de 15 anos ou mais que se declaram sem religião.','Censo 2022',5]
+].forEach(a=>IND[a[0]]=a);
+const IBGRP=['Economia','Educação','Território','Demografia','Cor ou raça','Religião'];
+/* modelo do "acima do esperado": poucos indicadores, pouco correlacionados entre si, para não decorar os dados */
+const MOD_FULL=['renda','evg','negra','urb','idmed','agro'],MOD_SMALL=['renda','evg','negra'];
+S.ind='renda';
 function loadIB(){
   if(IB)return Promise.resolve();if(IBP)return IBP;
-  try{const c=JSON.parse(localStorage.getItem('ibge22v1')||'null');if(c&&c.m){IB=c.m;return Promise.resolve()}}catch(e){}
-  const g=u=>fetch(IBURL+u).then(r=>{if(!r.ok)throw 0;return r.json()});
-  return IBP=Promise.all([g('9923/periodos/2022/variaveis/93?localidades=N6[all]&classificacao=1[6795,1]'),g('9543/periodos/2022/variaveis/2513?localidades=N6[all]&classificacao=2[6794]|86[95251]|287[100362]'),g('5938/periodos/2022/variaveis/37?localidades=N6[all]')]).then(([p,a,b])=>{
-    const D={},put=(ser,i)=>ser.forEach(r=>{const k=String(r.localidade.id).slice(0,6);(D[k]=D[k]||[0,0,0,0])[i]=+r.serie['2022']||0});
-    const R=p[0].resultados,cat=c=>R.find(r=>Object.keys(r.classificacoes[0].categoria)[0]===c).series;
-    put(cat('6795'),0);put(cat('1'),1);put(a[0].resultados[0].series,2);put(b[0].resultados[0].series,3);
-    IB=D;try{localStorage.setItem('ibge22v1',JSON.stringify({m:D}))}catch(e){}
+  try{const c=JSON.parse(localStorage.getItem(IBVER)||'null');if(c&&c.m){IB=c.m;return Promise.resolve()}}catch(e){}
+  IBN=0;
+  const D={},get=(id)=>{const k=id.length===7?id.slice(0,6):id;return D[k]=D[k]||{}};
+  const one=([q,map])=>fetch(IBURL+q+(q.endsWith('?')?'':'&')+IBLOC).then(r=>{if(!r.ok)throw 0;return r.json()}).then(js=>{
+    for(const [f,[vid,...cats]] of Object.entries(map)){
+      const v=js.find(x=>String(x.id)===vid);if(!v)continue;
+      const rs_=v.resultados.filter(r=>!cats.length||cats.some(c=>r.classificacoes.some(cl=>cl.categoria[c]!==undefined)));
+      for(const r of rs_)for(const se of r.series){const val=+Object.values(se.serie)[0];const o=get(String(se.localidade.id));if(isFinite(val))o[f]=(o[f]||0)+val}
+    }
+    IBN++;if(S.layer==='ind'||S.layer==='res'||ANALISE)ibProg();
+  });
+  return IBP=Promise.all(IBQ.map(one)).then(()=>{
+    const M={};for(const k in D){const o=D[k];M[k]=IBF.map(f=>o[f]==null?null:Math.round(o[f]*100)/100)}
+    IB=M;try{localStorage.setItem(IBVER,JSON.stringify({m:M}))}catch(e){}
   }).catch(()=>{IB=false;IBP=null});
 }
+function ibProg(){const el=$('ibprog');if(el)el.textContent=`Lendo indicadores do IBGE: ${IBN} de ${IBQ.length} tabelas…`}
 const ibKey=(uf,m)=>uf+':'+(m||'');
-function ibVal(uf,m){
-  if(!IB||uf==='zz')return null;
-  if(m!=null){const mm=(S.munList[uf]||[]).find(x=>x.cd===m);const v=mm&&IB[String(mm.cdi).slice(0,6)];return v&&v[0]?v:null}
-  if(IBS[uf])return IBS[uf];const pre=UFS[uf]&&UFS[uf][1];if(!pre)return null;
-  const t=[0,0,0,0];for(const k in IB)if(k.startsWith(pre)){const v=IB[k];t[0]+=v[0];t[1]+=v[1];t[2]+=v[2]*v[0];t[3]+=v[3]}
-  if(!t[0])return null;t[2]/=t[0];return IBS[uf]=t;
+function ibRec(uf,m){
+  if(!IB||uf==='zz')return null;let a;
+  if(uf==='br')a=IB['1'];
+  else if(m!=null){const mm=(S.munList[uf]||[]).find(x=>x.cd===m);a=mm&&IB[String(mm.cdi).slice(0,6)]}
+  else a=UFS[uf]&&IB[UFS[uf][1]];
+  if(!a)return null;const o={};IBF.forEach((f,i)=>o[f]=a[i]);return o.pop?o:null;
 }
+function ibX(k,v){if(!v)return null;try{const x=IND[k][3](v);return x==null||!isFinite(x)?null:x}catch(e){return null}}
 function share26(uf,m){
   const P=pair26(),l=leaders[K('pres',uf,m)];if(!P||!l||!l.all||!l.v)return null;
   const v=x=>{const e=l.all.find(y=>y.sq===x.sq);return e?e.v:0};const a=v(P[0]),b=v(P[1]);
-  return a+b>0?{y:a/(a+b)*100,w:a+b}:null;
+  return a+b>0?{y:a/(a+b)*100,w:a+b,a,b}:null;
 }
 function solve(A,b){const n=b.length;for(let i=0;i<n;i++){let p=i;for(let r=i+1;r<n;r++)if(Math.abs(A[r][i])>Math.abs(A[p][i]))p=r;[A[i],A[p]]=[A[p],A[i]];[b[i],b[p]]=[b[p],b[i]];if(Math.abs(A[i][i])<1e-12)return null;
   for(let r=0;r<n;r++){if(r===i)continue;const f=A[r][i]/A[i][i];for(let c=i;c<n;c++)A[r][c]-=f*A[i][c];b[r]-=f*b[i]}}return b.map((x,i)=>x/A[i][i])}
 function wls(X,y,w){const k=X[0].length,A=Array.from({length:k},()=>Array(k).fill(0)),b=Array(k).fill(0);
   X.forEach((x,i)=>{for(let r=0;r<k;r++){b[r]+=w[i]*x[r]*y[i];for(let c=0;c<k;c++)A[r][c]+=w[i]*x[r]*x[c]}});return solve(A,b)}
-const tx=(I,v)=>I[4]?Math.log10(Math.max(1,v)):v;
+const tx=(k,v)=>IND[k][5]?Math.log10(Math.max(1e-6,v)):v;
 function ibFit(){
   const M={u:{},n:0};S.ibm=M;if(!IB)return M;
   const ids=S.uf==='br'?UFKEYS.map(uf=>[uf,null,UFS[uf][0]]):(S.munList[S.uf]||[]).map(m=>[S.uf,m.cd,m.nm]);
-  const keys=Object.keys(IND),rows=[];
-  for(const [uf,m,nome] of ids){const v=ibVal(uf,m);if(!v)continue;const x={};keys.forEach(k=>x[k]=IND[k][2](v));const sh=share26(uf,m);
-    const u=M.u[ibKey(uf,m)]={x,nome,uf,m,y:sh?sh.y:null,w:sh?sh.w:0,res:null};if(sh)rows.push(u)}
-  const all=Object.values(M.u),I=IND[S.ind],srt=all.map(u=>u.x[S.ind]).sort((a,b)=>a-b);
-  all.forEach(u=>{let lo=0,hi=srt.length;const t=u.x[S.ind];while(lo<hi){const md=(lo+hi)>>1;srt[md]<t?lo=md+1:hi=md}u.q=srt.length>1?lo/(srt.length-1):.5});
+  const rows=[];
+  for(const [uf,m,nome] of ids){const v=ibRec(uf,m);if(!v)continue;const x={};for(const k in IND)x[k]=ibX(k,v);const sh=share26(uf,m);
+    const u=M.u[ibKey(uf,m)]={x,nome,uf,m,y:sh?sh.y:null,w:sh?sh.w:0,a:sh?sh.a:0,b:sh?sh.b:0,res:null};if(sh)rows.push(u)}
+  const all=Object.values(M.u).filter(u=>u.x[S.ind]!=null),srt=all.map(u=>u.x[S.ind]).sort((a,b)=>a-b);
+  Object.values(M.u).forEach(u=>{const t=u.x[S.ind];if(t==null){u.q=null;return}let lo=0,hi=srt.length;while(lo<hi){const md=(lo+hi)>>1;srt[md]<t?lo=md+1:hi=md}u.q=srt.length>1?lo/(srt.length-1):.5});
   M.n=rows.length;
-  if(rows.length>=8){const X=rows.map(u=>[1,...keys.map(k=>tx(IND[k],u.x[k]))]),y=rows.map(u=>u.y),w=rows.map(u=>u.w),bt=wls(X,y,w);
-    if(bt){let sw=0,my=0;rows.forEach((u,i)=>{sw+=w[i];my+=w[i]*y[i]});my/=sw;let ss=0,sr=0;
-      rows.forEach((u,i)=>{u.yh=X[i].reduce((s,xv,j)=>s+xv*bt[j],0);u.res=u.y-u.yh;ss+=w[i]*(y[i]-my)**2;sr+=w[i]*u.res**2});M.r2=1-sr/ss}}
-  if(rows.length>=3){const xs=rows.map(u=>tx(I,u.x[S.ind])),w=rows.map(u=>u.w);let sw=0,mx=0,my=0;rows.forEach((u,i)=>{sw+=w[i];mx+=w[i]*xs[i];my+=w[i]*u.y});mx/=sw;my/=sw;
-    let sxy=0,sxx=0,syy=0;rows.forEach((u,i)=>{const dx=xs[i]-mx,dy=u.y-my;sxy+=w[i]*dx*dy;sxx+=w[i]*dx*dx;syy+=w[i]*dy*dy});M.r=sxy/Math.sqrt(sxx*syy||1);M.b1=sxy/(sxx||1);M.b0=my-M.b1*mx}
+  /* modelo multivariado */
+  const feats=rows.length>=60?MOD_FULL:MOD_SMALL,R=rows.filter(u=>feats.every(k=>u.x[k]!=null));M.feats=feats;
+  if(R.length>=Math.max(10,feats.length*4)){const X=R.map(u=>[1,...feats.map(k=>tx(k,u.x[k]))]),y=R.map(u=>u.y),w=R.map(u=>u.w),bt=wls(X,y,w);
+    if(bt){let sw=0,my=0;R.forEach((u,i)=>{sw+=w[i];my+=w[i]*y[i]});my/=sw;let ss=0,sr=0;
+      R.forEach((u,i)=>{u.yh=X[i].reduce((s,xv,j)=>s+xv*bt[j],0);u.res=u.y-u.yh;ss+=w[i]*(y[i]-my)**2;sr+=w[i]*u.res**2});M.r2=1-sr/ss;M.nm=R.length}}
+  /* relação simples com o indicador escolhido */
+  const Q=rows.filter(u=>u.x[S.ind]!=null);M.nq=Q.length;
+  if(Q.length>=3){const xs=Q.map(u=>tx(S.ind,u.x[S.ind])),w=Q.map(u=>u.w);let sw=0,mx=0,my=0;Q.forEach((u,i)=>{sw+=w[i];mx+=w[i]*xs[i];my+=w[i]*u.y});mx/=sw;my/=sw;
+    let sxy=0,sxx=0,syy=0;Q.forEach((u,i)=>{const dx=xs[i]-mx,dy=u.y-my;sxy+=w[i]*dx*dy;sxx+=w[i]*dx*dx;syy+=w[i]*dy*dy});M.r=sxy/Math.sqrt(sxx*syy||1);M.b1=sxy/(sxx||1);M.b0=my-M.b1*mx;
+    /* quartis: soma os votos dos lugares de cada grupo */
+    const S2=[...Q].sort((p,q)=>p.x[S.ind]-q.x[S.ind]),n4=Math.max(1,Math.floor(S2.length/4)),grp=g=>{const a=g.reduce((s,u)=>s+u.a,0),b=g.reduce((s,u)=>s+u.b,0);return{s:a/(a+b||1)*100,lo:g[0].x[S.ind],hi:g[g.length-1].x[S.ind],n:g.length}};
+    M.qlo=grp(S2.slice(0,n4));M.qhi=grp(S2.slice(-n4))}
   return M;
 }
+const UNIT=()=>S.uf==='br'?['UF','UFs','das UFs','as UFs']:['município','municípios','dos municípios','os municípios'];
 function legIB(){
   const M=S.ibm,P=pair26();if(!M||!Object.keys(M.u).length)return '';
   if(S.layer==='ind')return `<span>menor</span><i class="grad" style="background:linear-gradient(90deg,${mix('#38c8e8',.12)},#38c8e8)"></i><span>maior ${IND[S.ind][1].toLowerCase()}</span>`;
   if(!P||M.r2==null)return '';const U=Object.values(M.u).filter(u=>u.res!=null),a=U.filter(u=>u.res>=0).length;
   return swt(colorOf(P[0].sg),esc(P[0].nm.split(' ')[0])+' acima do esperado',a)+swt(colorOf(P[1].sg),esc(P[1].nm.split(' ')[0])+' acima do esperado',U.length-a);
 }
+function tipIB(uf,m){
+  const dot=c=>`<i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${c};margin-right:6px"></i>`;
+  const u=S.ibm&&S.ibm.u[ibKey(uf,m)],I=IND[S.ind],P=pair26();
+  if(!u)return `<span class="mut">${IB===false?'indicadores do IBGE indisponíveis':uf==='zz'?'sem indicadores do IBGE no exterior':'carregando…'}</span>`;
+  let h=`<div class="row"><span>${I[1]}</span><b class="num">${u.x[S.ind]==null?'sem dado':I[4](u.x[S.ind])}</b></div>`;
+  if(u.y!=null&&P)h+=`<div class="row"><span>${dot(colorOf(P[0].sg))}${esc(P[0].nm.split(' ')[0])}</span><b class="num">${pc(u.y,1)}</b></div>`;
+  if(S.layer==='res'&&u.res!=null)h+=`<div class="mut" style="margin-top:6px">esperado pelo perfil: ${pc(u.yh,1)} · ${u.res>=0?'+':''}${u.res.toFixed(1).replace('.',',')} p.p.</div>`;
+  return h;
+}
 function scatterIB(M){
-  const I=IND[S.ind],P=pair26(),U=Object.values(M.u).filter(u=>u.y!=null);if(U.length<3||!P)return '';
-  const W=320,H=230,L=40,R=8,T=10,B=34,xs=U.map(u=>tx(I,u.x[S.ind])),ys=U.map(u=>u.y);
+  const k=S.ind,I=IND[k],P=pair26(),U=Object.values(M.u).filter(u=>u.y!=null&&u.x[k]!=null);if(U.length<3||!P)return '';
+  const W=320,H=230,L=40,R=8,T=10,B=34,xs=U.map(u=>tx(k,u.x[k])),ys=U.map(u=>u.y);
   let x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.floor(Math.min(...ys)/10)*10,y1=Math.ceil(Math.max(...ys)/10)*10;if(x1===x0)x1=x0+1;if(y1===y0)y1=y0+10;
   const X=v=>L+(v-x0)/(x1-x0)*(W-L-R),Y=v=>T+(1-(v-y0)/(y1-y0))*(H-T-B),wm=Math.max(...U.map(u=>u.w));
   let g='';for(let v=y0;v<=y1;v+=(y1-y0)>40?20:10)g+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#1f2940"/><text x="${L-5}" y="${Y(v)}" fill="#5d6b88" font-size="9" text-anchor="end" dominant-baseline="central">${v}%</text>`;
   if(y0<50&&y1>50)g+=`<line x1="${L}" x2="${W-R}" y1="${Y(50)}" y2="${Y(50)}" stroke="#9aa8c4" stroke-dasharray="3 3" stroke-opacity=".5"/>`;
-  const lab=v=>I[4]?I[3](10**v).replace(' hab.',''):I[3](v);
+  const lab=v=>(I[5]?I[4](10**v):I[4](v)).replace(' hab./km²','').replace(' hab.','');
   [x0,(x0+x1)/2,x1].forEach((v,i)=>g+=`<text x="${X(v)}" y="${H-B+13}" fill="#5d6b88" font-size="9" text-anchor="${['start','middle','end'][i]}">${lab(v)}</text>`);
-  g+=`<text x="${(L+W-R)/2}" y="${H-4}" fill="#7d8aa6" font-size="9.5" text-anchor="middle">${I[1]}${I[4]?' (escala log)':''}</text>`;
-  U.forEach((u,i)=>{const c=colorOf(u.y>=50?P[0].sg:P[1].sg);g+=`<circle cx="${X(xs[i]).toFixed(1)}" cy="${Y(u.y).toFixed(1)}" r="${(1.6+Math.sqrt(u.w/wm)*(S.uf==='br'?9:7)).toFixed(1)}" fill="${c}" fill-opacity=".55" stroke="${c}" stroke-width=".6"${S.uf==='br'?` data-uf="${u.uf}" style="cursor:pointer"`:''}><title>${esc(u.nome)}: ${I[3](u.x[S.ind])} · ${esc(P[0].nm.split(' ')[0])} ${pc(u.y,1)}</title></circle>`});
+  g+=`<text x="${(L+W-R)/2}" y="${H-4}" fill="#7d8aa6" font-size="9.5" text-anchor="middle">${I[1]}${I[5]?' (escala logarítmica)':''}</text>`;
+  U.forEach((u,i)=>{const c=colorOf(u.y>=50?P[0].sg:P[1].sg);g+=`<circle cx="${X(xs[i]).toFixed(1)}" cy="${Y(u.y).toFixed(1)}" r="${(1.6+Math.sqrt(u.w/wm)*(S.uf==='br'?9:7)).toFixed(1)}" fill="${c}" fill-opacity=".55" stroke="${c}" stroke-width=".6" data-k="${esc(ibKey(u.uf,u.m))}" style="cursor:pointer"><title>${esc(u.nome)}: ${I[4](u.x[k])} · ${esc(P[0].nm.split(' ')[0])} ${pc(u.y,1)}</title></circle>`});
   if(M.b1!=null){const a=M.b0+M.b1*x0,b=M.b0+M.b1*x1;g+=`<line x1="${X(x0)}" y1="${Y(a)}" x2="${X(x1)}" y2="${Y(b)}" stroke="#e8edf7" stroke-width="1.4" stroke-dasharray="5 3" stroke-opacity=".8"/>`}
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-top:10px" id="ibsc">${g}</svg>`;
+}
+const pp=x=>(x>=0?'+':'')+x.toFixed(1).replace('.',',');
+function leituraIB(M,nm){
+  const I=IND[S.ind],[,uS,dS]=UNIT(),r=M.r;if(r==null)return '';
+  const ar=Math.abs(r),forca=ar<.2?'praticamente nenhuma':ar<.4?'fraca':ar<.6?'moderada':ar<.8?'forte':'muito forte';
+  let h=`<div class="iblead"><b>Relação ${forca}</b> (correlação de ${r.toFixed(2).replace('.',',')}, numa escala de -1 a 1). `;
+  h+=ar<.2?`Saber ${I[1].toLowerCase()==='população'?'o tamanho da população':'o nível de '+I[1].toLowerCase()} de um lugar quase não ajuda a prever o voto ali.</div>`:
+    `Onde ${I[1].toLowerCase()} é ${r>0?'maior':'menor'}, ${nm} tende a ter fatia maior; onde é ${r>0?'menor':'maior'}, a fatia de ${nm} tende a cair.</div>`;
+  if(M.qhi&&M.qlo&&M.nq>=8){h+=`<div class="iblead">Nos ${M.qhi.n} ${uS} com <b>maior</b> ${I[1].toLowerCase()} (de ${I[4](M.qhi.lo)} a ${I[4](M.qhi.hi)}), ${nm} teve <b>${pc(M.qhi.s,1)}</b> dos votos dos dois principais. Nos ${M.qlo.n} com <b>menor</b> (de ${I[4](M.qlo.lo)} a ${I[4](M.qlo.hi)}), teve <b>${pc(M.qlo.s,1)}</b>. Diferença de ${pp(M.qhi.s-M.qlo.s).replace('+','')} pontos.</div>`}
+  if(M.b1!=null&&ar>=.2){const st=I[8],d=st==='dobrar'?M.b1*Math.log10(2):M.b1*st;
+    h+=`<div class="iblead">Na média, ${st==='dobrar'?'cada vez que '+I[1].toLowerCase()+' dobra':'cada '+(I[4](st).replace(/,0(?=%| )/,''))+' a mais de '+I[1].toLowerCase()}, a fatia de ${nm} ${d>=0?'sobe':'cai'} cerca de ${Math.abs(d).toFixed(1).replace('.',',')} ponto${Math.abs(d)>=1.95?'s':''}.</div>`}
+  return h;
 }
 function boxIB(box){
   if(IB===false){box.innerHTML='<div class="card"><div class="mut sm">Não foi possível ler a API do IBGE agora. Tente de novo em alguns minutos.</div></div>';return}
   if(S.uf==='zz'){box.innerHTML='<div class="card"><div class="mut sm">Os indicadores do IBGE cobrem apenas os municípios brasileiros.</div></div>';return}
   const M=S.ibm,P=pair26();
-  if(!IB||!M||!P){box.innerHTML=`<div class="card"><div class="mut sm">${!P&&S.fin?'A análise usa Lula como referência, e ele não está entre os dois principais deste turno.':'Carregando indicadores do IBGE…'}</div></div>`;return}
-  const I=IND[S.ind],w=unitWord(),U=Object.values(M.u),nm=esc(P[0].nm.split(' ')[0]);
-  const chips=`<div class="presets" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:2px">${Object.values(IND).map(i=>`<button data-i="${i[0]}" class="${i[0]===S.ind?'on':''}" style="${i[0]===S.ind?'border-color:var(--acc);color:var(--acc)':''}">${i[1]}</button>`).join('')}</div>`;
+  if(!IB||!M||!P){box.innerHTML=`<div class="card"><div class="mut sm" id="ibprog">${!P&&S.fin?'A análise usa Lula como referência, e ele não está entre os dois principais deste turno.':'Carregando indicadores do IBGE…'}</div></div>`;if(!IB)ibProg();return}
+  const I=IND[S.ind],[uS1,uS,,uArt]=UNIT(),U=Object.values(M.u),nm=esc(P[0].nm.split(' ')[0]);
+  const sel=`<select class="ibsel" id="ibsel">${IBGRP.map(g=>`<optgroup label="${g}">${Object.values(IND).filter(i=>i[2]===g).map(i=>`<option value="${i[0]}"${i[0]===S.ind?' selected':''}>${i[1]}</option>`).join('')}</optgroup>`).join('')}</select>`;
   let body='';
   if(S.layer==='ind'){
-    const r=M.r,f=r==null?'':Math.abs(r)<.2?'fraca':Math.abs(r)<.5?'moderada':'forte';
-    body=chips+scatterIB(M)+(r!=null?`<div class="sm" style="margin-top:8px">Correlação ponderada: <b class="num">${r.toFixed(2).replace('.',',')}</b> <span class="mut">(${f}${Math.abs(r)<.2?', sem relação clara':r>=0?', quanto maior o indicador, maior a fatia de '+nm:', quanto maior o indicador, menor a fatia de '+nm})</span></div>`:'')+
-      `<p class="sm mut" style="margin-top:8px;line-height:1.4">Cada ponto é ${S.uf==='br'?'uma UF':'um município'}; o tamanho é proporcional aos votos dos dois principais, e a correlação também usa esse peso. Eixo vertical: fatia de ${nm} entre os dois principais. ${M.n} ${w} com dados.</p>`;
+    const V=U.filter(u=>u.x[S.ind]!=null).sort((a,b)=>b.x[S.ind]-a.x[S.ind]);
+    const row=u=>rowU(u.nome,I[4](u.x[S.ind]),u.y!=null?`${nm} ${pc(u.y,1)}`:'sem votos lidos');
+    body=sel+`<div class="sm mut" style="margin-top:8px;line-height:1.45">${I[6]} <span style="color:var(--tx3)">Fonte: IBGE, ${I[7]}.</span></div>`+scatterIB(M)+
+      `<div class="sm mut" style="margin-top:4px;line-height:1.4">Cada ponto é ${S.uf==='br'?'uma UF':'um município'}; altura = fatia de ${nm} entre os dois principais; tamanho = votos; tracejado = tendência.</div>`+leituraIB(M,nm)+
+      (V.length>=6?`<div style="margin-top:14px"><div class="sm mut" style="margin-bottom:6px">Maiores valores</div>${listRows(V.slice(0,4),row)}</div><div style="margin-top:10px"><div class="sm mut" style="margin-bottom:6px">Menores valores</div>${listRows(V.slice(-4).reverse(),row)}</div>`:'');
   }else{
-    const R=U.filter(u=>u.res!=null);
-    if(!R.length){body=`<div class="mut sm">São necessários pelo menos 8 ${w} com votos lidos para estimar o modelo.</div>`}
+    const R=U.filter(u=>u.res!=null),feats=(M.feats||[]).map(k=>IND[k][1].toLowerCase());
+    if(!R.length){body=`<div class="mut sm">São necessários pelo menos ${Math.max(10,(M.feats||MOD_SMALL).length*4)} ${uS} com votos lidos para estimar o modelo.</div>`}
     else{const up=[...R].sort((a,b)=>b.res-a.res).slice(0,5),dn=[...R].sort((a,b)=>a.res-b.res).slice(0,5);
-      const row=u=>rowU(u.nome,(u.res>=0?'+':'')+u.res.toFixed(1).replace('.',',')+' p.p.',`observado ${pc(u.y,1)} · esperado ${pc(u.yh,1)}`);
-      body=`<div class="big">${pc(Math.max(0,M.r2)*100,0)}</div><div class="mut sm" style="margin-top:6px">da variação do voto entre ${S.uf==='br'?'as UFs':'os municípios'} é explicada pelos quatro indicadores juntos (R², ${M.n} ${w})</div>
+      const row=u=>rowU(u.nome,pp(u.res)+' p.p.',`teve ${pc(u.y,1)} · perfil indicaria ${pc(u.yh,1)}`);
+      body=`<div class="iblead" style="margin-top:0">O painel estima quanto ${nm} "deveria" ter em cada ${uS1}, só olhando o perfil do lugar (${feats.slice(0,-1).join(', ')} e ${feats.slice(-1)}), e compara com o que teve de fato. Sobra positiva = ${nm} foi melhor do que o perfil indicava, sinal de fatores locais: liderança política, campanha, história do lugar.</div>
+      <div class="big" style="margin-top:12px">${pc(Math.max(0,M.r2)*100,0)}</div><div class="mut sm" style="margin-top:6px">da diferença de voto entre ${uArt} é explicada por esse perfil (R², ${M.nm} ${uS}). O restante é o que o mapa mostra.</div>
       <div style="margin-top:14px"><div class="sm mut" style="margin-bottom:6px">${nm} acima do esperado</div>${listRows(up,row)}</div>
       <div style="margin-top:12px"><div class="sm mut" style="margin-bottom:6px">${nm} abaixo do esperado</div>${listRows(dn,row)}</div>`}
   }
   box.innerHTML=`<div class="card"><h3><span>${S.layer==='ind'?'Indicadores × voto':'Acima do esperado'} · ${S.turn}º turno</span><span>${M.n}/${totalUnits()}</span></h3>${body}
-   <p class="sm mut" style="margin-top:10px;line-height:1.4">Fonte: IBGE, Censo 2022 e PIB dos Municípios 2022. São dados por lugar, não por eleitor: "municípios mais ricos votaram em X" não quer dizer que "eleitores ricos votaram em X". Correlação não é causa.</p></div>`;
-  box.querySelectorAll('button[data-i]').forEach(b=>b.onclick=()=>{S.ind=b.dataset.i;repaint()});
-  box.querySelectorAll('#ibsc circle[data-uf]').forEach(c=>c.onclick=()=>go({uf:c.dataset.uf,mun:null}));
+   <p class="sm mut" style="margin-top:12px;line-height:1.4">São dados por lugar, não por eleitor: "${S.uf==='br'?'estados':'municípios'} com mais X votaram em Y" não quer dizer que "pessoas com X votaram em Y". Correlação não é causa.</p></div>`;
+  const s_=$('ibsel');if(s_)s_.onchange=()=>{S.ind=s_.value;repaint();anLeft()};
+  box.querySelectorAll('#ibsc circle[data-k]').forEach(c=>c.onclick=()=>{const [uf,m]=c.dataset.k.split(':');S.uf==='br'?go({uf,mun:null}):go({mun:m})});
+}
+/* coluna esquerda da página de análise: perfil do lugar */
+function anLeft(){
+  const L=$('colL');if(!L)return;
+  if(!R22&&R22!==false)load22().then(()=>{if(R22)anLeft()});
+  if(!IB){L.innerHTML=`<div class="card"><h3><span>Perfil do lugar</span><span>IBGE</span></h3><div class="mut sm" id="ibprog">${IB===false?'Não foi possível ler a API do IBGE agora.':'Carregando indicadores do IBGE…'}</div></div>`;if(IB!==false){ibProg();loadIB().then(()=>{anLeft();if(S.layer==='ind'||S.layer==='res')repaint()})}addPix();return}
+  const uf=S.uf,m=S.mun,nome=uf==='br'?'Brasil':uf==='zz'?'Exterior':m?munNm(m):UFS[uf][0];
+  const v=ibRec(uf,m),par=uf==='br'?null:m?ibRec(uf,null):ibRec('br',null),parN=uf==='br'?'':m?UFS[uf][0]:'Brasil';
+  /* posição entre os irmãos (municípios da UF ou UFs do Brasil) */
+  const sib=uf==='br'?[]:m?(S.munList[uf]||[]).map(x=>ibRec(uf,x.cd)):UFKEYS.map(u=>ibRec(u,null));
+  const rank=(k,x)=>{const vals=sib.map(r=>ibX(k,r)).filter(z=>z!=null);if(vals.length<3||x==null)return '';const pos=vals.filter(z=>z>x).length+1;return `${pos}º de ${vals.length} ${m?'em '+parN:'UFs'}`};
+  let rows='';
+  if(!v)rows=`<div class="mut sm">${uf==='zz'?'O IBGE não tem indicadores para o exterior.':'Sem indicadores para este lugar.'}</div>`;
+  else for(const g of IBGRP){rows+=`<div class="ibg">${g}</div>`;for(const I of Object.values(IND).filter(i=>i[2]===g)){const x=ibX(I[0],v);if(x==null)continue;const px=par?ibX(I[0],par):null;
+    const cmp=[px!=null?`${parN}: ${I[4](px)}`:'',rank(I[0],x)].filter(Boolean).join(' · ');
+    rows+=`<div class="ibrow${I[0]===S.ind&&S.layer==='ind'?' on':''}" data-i="${I[0]}" title="${esc(I[6])}"><span class="ibn">${I[1]}</span><span class="ibv num">${I[4](x)}</span>${cmp?`<span class="ibc">${cmp}</span>`:''}</div>`}}
+  let res='';const P=pair26();
+  if(P&&uf!=='zz'){const sh=share26(uf,m),r=r22get(uf,m),o=(S.turn-1)*4;
+    if(sh){res=`<div class="card"><h3><span>Resultado · ${S.turn}º turno</span><span>dois principais</span></h3>
+     <div class="kv"><div class="l"><span style="color:${colorOf(P[0].sg)}">${esc(P[0].nm)}</span><b class="num">${pc(sh.y,2)}</b></div><div class="l"><span style="color:${colorOf(P[1].sg)}">${esc(P[1].nm)}</span><b class="num">${pc(100-sh.y,2)}</b></div>
+     ${r&&r[o]+r[o+1]>0?`<div class="l"><span class="mut">Lula em 2022 (${S.turn}º turno)</span><b class="num">${pc(r[o]/(r[o]+r[o+1])*100,2)}</b></div>`:''}</div></div>`}}
+  L.innerHTML=res+`<div class="card"><h3><span>Perfil · ${esc(nome)}</span><span>IBGE</span></h3>${rows}<p class="sm mut" style="margin-top:10px;line-height:1.4">Clique num indicador para vê-lo no mapa. Fontes: Censo 2022 e PIB dos Municípios (2022; estrutura da economia, 2021).</p></div>`;
+  L.querySelectorAll('.ibrow[data-i]').forEach(e=>e.onclick=()=>{S.ind=e.dataset.i;if(S.layer!=='ind'&&S.cargo==='pres')go({layer:'ind'});else{repaint();anLeft()}});
+  addPix();
 }
 
 /* ===== boca de jacaré (v5.7) =====
@@ -1489,8 +1593,8 @@ function jacClose(){$('jmodal').classList.remove('on')}
 (function(){const m=document.createElement('div');m.id='jmodal';m.innerHTML='<div class="pbox" id="jbody" style="width:min(1040px,95vw)"></div>';document.body.appendChild(m);
   m.addEventListener('click',e=>{if(e.target===m)jacClose()});document.addEventListener('keydown',e=>{if(e.key==='Escape')jacClose()})})();
 $('bJac').onclick=jacOpen;
-if(ANALISE){$('brandk').textContent='Análise';$('bMode').textContent='Apuração';if(!/;l=/.test(location.hash))S.layer='v22'}
-$('bMode').onclick=()=>{const h=location.hash.replace(/;l=(v22|m22|ind|res)/,'');location.href=(ANALISE?'./':'analise.html')+h};
+if(ANALISE){$('brandk').textContent='Análise';document.querySelector('.live').style.display='none';if(!/;l=/.test(location.hash))S.layer='ind'}
+document.querySelectorAll('#modes a').forEach(a=>{a.classList.toggle('on',(a.dataset.m==='an')===ANALISE);a.onclick=e=>{e.preventDefault();const h=location.hash.replace(/;l=\w+/,'');location.href=(a.dataset.m==='an'?'analise.html':'./')+h}});
 
 /* ===== série local da apuração ===== */
 const serieKey=()=>'ap26:'+S.turn+'/'+S.uf+'/'+S.cargo+(S.mun||'');
@@ -1575,7 +1679,7 @@ async function makePng(){
     for(const sp of $('legend').children){const i=sp.querySelector('i'),txt=sp.textContent.trim().replace(/\s+/g,' '),w=g.measureText(txt).width+34;if(x+w>W-40){x=40;y+=32}
       if(i){const col=getComputedStyle(i).backgroundColor;if(col&&col!=='rgba(0, 0, 0, 0)'){g.fillStyle=col;g.fillRect(x,y-14,14,14)}else if(/gradient/.test(getComputedStyle(i).backgroundImage)){const m=getComputedStyle(i).backgroundImage.match(/rgba?\([^)]+\)|#[0-9a-f]{3,6}/i);if(m){g.fillStyle=m[0];g.fillRect(x,y-14,14,14);g.strokeStyle='#05070c';g.lineWidth=2;for(let k=-14;k<14;k+=5){g.beginPath();g.moveTo(x+k,y);g.lineTo(x+k+14,y-14);g.stroke()}}}else if(/245, 185, 66/.test(getComputedStyle(i).boxShadow)){g.strokeStyle='#f5b942';g.lineWidth=2;g.strokeRect(x+1,y-13,12,12)}}
       g.fillStyle='#9aa8c4';g.fillText(txt,x+(i?22:0),y);x+=w+18}
-    g.fillStyle='#5d6b88';g.font='500 17px sans-serif';g.fillText('Desenvolvido por Luciano Victor com apoio de IA (Claude, Anthropic)  ·  v. 7.2  ·  Fonte: TSE e IBGE  ·  '+$('stamp').textContent,40,1372);
+    g.fillStyle='#5d6b88';g.font='500 17px sans-serif';g.fillText('Desenvolvido por Luciano Victor com apoio de IA (Claude, Anthropic)  ·  v. 7.3  ·  Fonte: TSE e IBGE  ·  '+$('stamp').textContent,40,1372);
     const blob=await new Promise(ok=>cv.toBlob(ok,'image/png'));URL.revokeObjectURL(url);return blob;
   }
 }
