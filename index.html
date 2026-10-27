@@ -49,6 +49,8 @@ main{position:relative;display:grid;grid-template-columns:330px minmax(0,1fr) 35
 #map path:hover{stroke:#fff;stroke-width:1.4}
 #map path.t2u{stroke:#f5b942;stroke-width:2;stroke-dasharray:5 3}
 #map path.sel{stroke:var(--acc);stroke-width:2}
+#map.zoomed path:not(#munhi){opacity:.3}#map.zoomed text{display:none}
+.sect{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}.sect th{position:sticky;top:0;background:var(--panel);color:var(--tx3);font-weight:600;text-align:right;padding:5px 6px;border-bottom:1px solid var(--line)}.sect td{text-align:right;padding:4px 6px;border-bottom:1px solid var(--line)}.sect th:first-child,.sect td:first-child{text-align:left}
 #map.fade{opacity:0;transform:scale(.985)}
 #map{transition:opacity .22s,transform .22s}
 .maptitle{position:absolute;left:18px;top:14px;pointer-events:none}
@@ -248,7 +250,7 @@ header{gap:12px;flex-wrap:nowrap}.brand{white-space:nowrap}.brand small{display:
   </section>
   <section class="col r" id="colR"><div id="layerBox" class="stack"></div><div id="mainBox" class="stack"></div><div id="trendBox" class="stack"></div></section>
 </main>
-<footer><span>Fonte: TSE · resultados.tse.jus.br · malhas: IBGE. Dados em apuração oficial; podem sofrer retificação.</span><span class="cred">Desenvolvido por <b>Luciano Victor</b> com apoio de IA (Claude, Anthropic) · v. 7.4</span><span id="foot"></span><img src="https://hits.sh/luciano-victor.github.io/apuracao2026.svg" alt="" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></footer><!-- contador de acessos (v6.1): uma contagem por abertura da página; estatísticas em https://hits.sh/luciano-victor.github.io/apuracao2026/ -->
+<footer><span>Fonte: TSE · resultados.tse.jus.br · malhas: IBGE. Dados em apuração oficial; podem sofrer retificação.</span><span class="cred">Desenvolvido por <b>Luciano Victor</b> com apoio de IA (Claude, Anthropic) · v. 7.5</span><span id="foot"></span><img src="https://hits.sh/luciano-victor.github.io/apuracao2026.svg" alt="" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></footer><!-- contador de acessos (v6.1): uma contagem por abertura da página; estatísticas em https://hits.sh/luciano-victor.github.io/apuracao2026/ -->
 </div>
 <div class="tip" id="tip"></div>
 
@@ -395,6 +397,7 @@ function project(items){
     const polys=i.geom.type==='Polygon'?[i.geom.coordinates]:i.geom.coordinates;
     polys.forEach(p=>p.forEach(r=>{d+='M'+r.map(([x,y])=>((x-x0)*k*sc+ox).toFixed(1)+' '+((y1-y)*sc+oy).toFixed(1)).join('L')+'Z'}));
     i.d=d;});
+  items.proj={x0,y1,k,sc,ox,oy};
   return items;
 }
 
@@ -433,6 +436,7 @@ const hideTip=()=>tip.style.opacity=0;
 
 function go(p){
   const pc0=S.cargo,pu0=S.uf;
+  if(p.mun!==undefined&&p.mun!==S.mun)S.loc=null;
   Object.assign(S,p);
   if(S.layer==='cand'&&p.layer===undefined&&((p.cargo!==undefined&&p.cargo!==pc0)||(p.uf!==undefined&&p.uf!==pu0))){S.cand=null;S.layer='lider'}
   if(S.turn===2&&S.cargo!=='pres'&&S.cargo!=='gov')S.cargo='pres';
@@ -467,7 +471,7 @@ async function render(fresh){
   const tok=++S.tok;
   document.querySelectorAll('.tabs button').forEach(b=>{b.classList.toggle('on',b.dataset.k===S.cargo);b.disabled=(S.turn===2&&!['pres','gov'].includes(b.dataset.k))||(S.uf==='zz'&&b.dataset.k!=='pres');if(b.dataset.k==='de')b.textContent=cargoNome('de',S.uf)});
   const noLayers=S.uf==='br'&&isProp(S.cargo);
-  $('layers').style.display=noLayers?'none':'flex';
+  $('layers').style.display=noLayers||(ANALISE&&S.mun&&S.uf!=='br'&&S.uf!=='zz')?'none':'flex';
   drawLayers();drawTurns();
   const bs=document.querySelector('.brand small');if(bs)bs.textContent=S.turn===2?'2º turno · 25/10/2026':'1º turno · 04/10/2026';
   sel.value=S.uf;markUFs();$('bWorld').classList.toggle('on',S.uf==='zz');
@@ -508,7 +512,7 @@ function buildPaths(svg,items,scope){
   setTimeout(()=>{
     patIds.clear();
     svg.innerHTML='<defs id="defs"></defs>'+items.map(i=>`<path data-id="${i.id}" d="${i.d}" fill="#18213a"/>`).join('')+items.filter(i=>i.lab).map(i=>`<text class="hl ${i.cls||''}" x="${i.x.toFixed(1)}" y="${i.y.toFixed(1)}">${i.lab}</text>`).join('');
-    curMap={scope,nat:scope.startsWith('br'),ctr:{},paths:Object.fromEntries([...svg.querySelectorAll('path')].map(p=>[p.dataset.id,p]))};
+    curMap={scope,proj:items.proj,nat:scope.startsWith('br'),ctr:{},paths:Object.fromEntries([...svg.querySelectorAll('path')].map(p=>[p.dataset.id,p]))};
     items.forEach(i=>{if(i.lab)curMap.ctr[i.id]=[i.x,i.y]});
     svg.querySelectorAll('path').forEach(p=>{
       p.addEventListener('click',()=>{const id=p.dataset.id;if(scope.startsWith('br'))go({uf:id,mun:null});else{const c=munCd(id);go({mun:S.mun===c?null:c})}});
@@ -581,7 +585,7 @@ function repaint(){
   if(S.layer==='cand'&&S.cand){let mx=0;for(const u of candUnits())mx=Math.max(mx,u.sh);S.candMax=mx||1}
   if(curMap.nat){const o=t2Outline();for(const uf of UFKEYS){const p=curMap.paths[uf];if(p){p.style.fill=fillUnit(uf,null);p.classList.toggle('t2u',o&&!govDone(uf))}}}
   else for(const m of S.munList[S.uf]||[]){const p=curMap.paths[m.cdi];if(p){p.style.fill=fillUnit(S.uf,m.cd);p.classList.toggle('sel',m.cd===S.mun)}}
-  legend();layerSoon();drawArrows();drawBubbles();
+  legend();layerSoon();drawArrows();drawBubbles();drawLocs();
 }
 function units(cg,all){
   const ok=u=>u.l&&(all||u.l.v>0)&&(all||S.layer==='lider'||!t1Off(u.uf));
@@ -736,6 +740,7 @@ function listRows(rows,fn){return `<div class="rk">${rows.map(fn).join('')}</div
 const rowU=(nome,val,sub)=>`<div class="it"><span class="pos"></span><span class="nm">${esc(nome)}</span><span class="pc">${val}</span><div class="vt">${sub}</div></div>`;
 async function layerBox(){
   const L=S.layer,box=$('layerBox');
+  if(secOn()){secBox(box);return}
   if(ANALISE&&L==='lider'){box.innerHTML='';return}
   if(L==='lider'&&S.uf==='br'&&S.cargo==='pres'){await projBox(box);if(S.layer!=='lider')return;box.insertAdjacentHTML('beforeend',regiaoHtml());{const z=$('rgz');if(z)z.onclick=()=>go({uf:'zz',mun:null,cargo:'pres'})}placeLeft('faltam',faltamHtml(),true);bindFaltam();return}
   if(L==='andamento'){andamentoBox(box);return}
@@ -1526,6 +1531,111 @@ function anLeft(){
   addPix();
 }
 
+
+/* ===== locais de votação e seções (v7.5) =====
+   Arquivos estáticos sec/{uf}/{código TSE}.json, gerados dos dados abertos do TSE:
+   votação por seção 2026 e 2022, locais de votação 2026 (com coordenadas) e perfil do eleitorado por seção (ES).
+   Por local: [zona, nº local, nome, bairro, endereço, lat, lon, eleitores, votos 2026 (8), votos 2022 (8), perfil (6) ou 0, seções].
+   Votos (8): 1º turno [Lula, Flávio, outros válidos, brancos+nulos], 2º turno [idem].
+   Perfil (6): [eleitores, superior completo, até fundamental incompleto, 16 a 24 anos, 60 anos ou mais, mulheres].
+   Seção: [nº, eleitores, votos 2026 (8), votos 2022 (8), perfil (6)?]. Em 2022, a seção foi casada pelo número (zona e seção). */
+const SEC={},SECP={};S.secMode='r26';S.loc=null;
+const secOn=()=>ANALISE&&S.mun&&S.uf!=='br'&&S.uf!=='zz'&&curMap&&!curMap.nat;
+function secLoad(uf,cd){const k=uf+'/'+(+cd);if(SEC[k])return Promise.resolve(SEC[k]);if(SECP[k])return SECP[k];
+  return SECP[k]=fetch('sec/'+k+'.json').then(r=>{if(!r.ok)throw 0;return r.json()}).then(j=>SEC[k]=j).catch(()=>{SEC[k]=false;return false})}
+const shTw=(v,t)=>{const o=(t-1)*4,a=v[o],b=v[o+1];return a+b>0?a/(a+b)*100:null};
+const SECM={
+  r26:['Resultado 2026',(l,t)=>shTw(l[8],t),'div'],
+  d22:['Variação desde 2022',(l,t)=>{const a=shTw(l[8],t),b=shTw(l[9],t);return a==null||b==null?null:a-b},'dif'],
+  r22:['Resultado 2022',(l,t)=>shTw(l[9],t),'div'],
+  sup:['Eleitores com superior completo',l=>l[10]?l[10][1]/l[10][0]*100:null,'seq'],
+  bai:['Eleitores até fundamental incompleto',l=>l[10]?l[10][2]/l[10][0]*100:null,'seq'],
+  jov:['Eleitores de 16 a 24 anos',l=>l[10]?l[10][3]/l[10][0]*100:null,'seq'],
+  ido:['Eleitores de 60 anos ou mais',l=>l[10]?l[10][4]/l[10][0]*100:null,'seq'],
+  fem:['Eleitoras (mulheres)',l=>l[10]?l[10][5]/l[10][0]*100:null,'seq']};
+/* a mesma estrutura serve para a seção: monta um "local" de mentira com os campos nas mesmas posições */
+const secAsLoc=s=>[0,0,'','','',null,null,s[1],s.slice(2,10),s.slice(10,18),s.length>=24?s.slice(18,24):0,[]];
+function secColor(val,mode,vals){
+  const P=pair26();if(val==null)return '#3a4560';const ty=SECM[mode][2];
+  if(ty==='div'){if(!P)return '#9aa8c4';return mix(colorOf(val>=50?P[0].sg:P[1].sg),clamp(.3+Math.abs(val-50)/25*.7,.3,1))}
+  if(ty==='dif'){if(!P)return '#9aa8c4';return mix(colorOf(val>=0?P[0].sg:P[1].sg),clamp(.25+Math.abs(val)/10*.75,.25,1))}
+  const srt=vals.filter(x=>x!=null).sort((a,b)=>a-b);const q=srt.length>1?srt.filter(x=>x<val).length/(srt.length-1):.5;return mix('#38c8e8',clamp(.15+q*.85,.15,1));
+}
+function proj1(lon,lat){const p=curMap&&curMap.proj;if(!p||lon==null)return null;return [(lon-p.x0)*p.k*p.sc+p.ox,(p.y1-lat)*p.sc+p.oy]}
+let secShape={};
+async function drawLocs(){
+  const svg=$('map');let g=document.getElementById('locs');
+  if(!secOn()){if(g)g.remove();const o=document.getElementById('munhi');if(o)o.remove();svg.classList.remove('zoomed');if(svg.getAttribute('viewBox')!=='0 0 800 800')svg.setAttribute('viewBox','0 0 800 800');return}
+  const mm=(S.munList[S.uf]||[]).find(x=>x.cd===S.mun);if(!mm)return;
+  const p=curMap.paths[mm.cdi];if(!p)return;
+  const bb=p.getBBox(),pad=Math.max(bb.width,bb.height)*.08,side=Math.max(bb.width,bb.height)+2*pad;
+  svg.setAttribute('viewBox',`${(bb.x+bb.width/2-side/2).toFixed(2)} ${(bb.y+bb.height/2-side/2).toFixed(2)} ${side.toFixed(2)} ${side.toFixed(2)}`);svg.classList.add('zoomed');
+  /* contorno detalhado do município */
+  if(!document.getElementById('munhi')||document.getElementById('munhi').dataset.id!==mm.cdi){
+    const old=document.getElementById('munhi');if(old)old.remove();
+    const d=secShape[mm.cdi]||(secShape[mm.cdi]=await fetch(`${IBGE}/municipios/${mm.cdi}?formato=application/vnd.geo+json&qualidade=maxima`).then(r=>r.json()).then(j=>{const f=j.features?j.features[0]:j;const gm=f.geometry||f;const polys=gm.type==='Polygon'?[gm.coordinates]:gm.coordinates;let s='';polys.forEach(pl=>pl.forEach(r=>{s+='M'+r.map(([x,y])=>proj1(x,y).map(v=>v.toFixed(2)).join(' ')).join('L')+'Z'}));return s}).catch(()=>''));
+    if(!secOn())return;
+    if(d){const e=document.createElementNS('http://www.w3.org/2000/svg','path');e.id='munhi';e.dataset.id=mm.cdi;e.setAttribute('d',d);e.setAttribute('fill','#1d2742');e.setAttribute('stroke','#7cf2c8');e.setAttribute('stroke-width','1.2');e.setAttribute('vector-effect','non-scaling-stroke');svg.appendChild(e)}
+  }
+  const data=await secLoad(S.uf,S.mun);if(!secOn()||(S.mun!==mm.cd))return;
+  g=document.getElementById('locs');if(g)g.remove();
+  if(!data)return;
+  g=document.createElementNS('http://www.w3.org/2000/svg','g');g.id='locs';
+  const L=data.L,f=SECM[S.secMode][1],vals=L.map(l=>f(l,S.turn)),mx=Math.max(...L.map(l=>l[7]),1);
+  let h='';
+  L.forEach((l,i)=>{const c=proj1(l[6],l[5]);if(!c)return;const r=side*(.004+.016*Math.sqrt(l[7]/mx));
+    h+=`<circle cx="${c[0].toFixed(2)}" cy="${c[1].toFixed(2)}" r="${r.toFixed(3)}" fill="${secColor(vals[i],S.secMode,vals)}" fill-opacity=".9" stroke="${i===S.loc?'#fff':'#05070c'}" stroke-width="${i===S.loc?2:.6}" vector-effect="non-scaling-stroke" data-i="${i}" style="cursor:pointer"/>`});
+  g.innerHTML=h;svg.appendChild(g);
+  g.querySelectorAll('circle').forEach(c=>{const i=+c.dataset.i;
+    c.addEventListener('pointermove',e=>{e.stopPropagation();showTip(e,locTip(L[i]))});c.addEventListener('pointerleave',hideTip);
+    c.addEventListener('click',e=>{e.stopPropagation();S.loc=S.loc===i?null:i;drawLocs();secBox($('layerBox'))})});
+  secLegend(vals);
+}
+const pcN=x=>x==null?'sem dado':pc(x,1);
+function locTip(l){
+  const P=pair26(),nm=P?esc(P[0].nm.split(' ')[0]):'Lula',t=S.turn;
+  const a=shTw(l[8],t),b=shTw(l[9],t);let h=`<b>${esc(l[2])}</b><div class="mut sm">${esc(l[3])}${l[3]?' · ':''}${fmt(l[7])} eleitores · ${l[11].length} seç${l[11].length>1?'ões':'ão'}</div>`;
+  h+=`<div class="row" style="margin-top:6px"><span>${nm} · ${t}º turno 2026</span><b class="num">${pcN(a)}</b></div><div class="row mut"><span>Lula · ${t}º turno 2022</span><span class="num">${pcN(b)}</span></div>`;
+  if(l[10])h+=`<div class="mut sm" style="margin-top:6px">Superior completo ${pc(l[10][1]/l[10][0]*100,0)} · até fund. incompleto ${pc(l[10][2]/l[10][0]*100,0)} · 60+ ${pc(l[10][4]/l[10][0]*100,0)}</div>`;
+  return h;
+}
+function secLegend(vals){
+  const m=SECM[S.secMode],P=pair26();let h='';
+  if(m[2]==='div'&&P)h=swt(colorOf(P[0].sg),esc(P[0].nm.split(' ')[0])+' à frente')+swt(colorOf(P[1].sg),esc(P[1].nm.split(' ')[0])+' à frente');
+  else if(m[2]==='dif'&&P)h=swt(colorOf(P[0].sg),esc(P[0].nm.split(' ')[0])+' cresceu')+swt(colorOf(P[1].sg),esc(P[1].nm.split(' ')[0])+' cresceu');
+  else h=`<span>menor</span><i class="grad" style="background:linear-gradient(90deg,${mix('#38c8e8',.15)},#38c8e8)"></i><span>maior</span>`;
+  h+='<span>círculo = local de votação; tamanho = eleitores</span>';
+  $('legend').innerHTML=h+`<div class="lcap">${m[0]}${m[2]==='seq'?'':' · '+S.turn+'º turno'}. Clique num local para ver as seções.</div>`;
+}
+function secBox(box){
+  const mm=(S.munList[S.uf]||[]).find(x=>x.cd===S.mun),data=SEC[S.uf+'/'+(+S.mun)];
+  if(data===undefined){box.innerHTML='<div class="card"><div class="mut sm">Carregando locais de votação…</div></div>';secLoad(S.uf,S.mun).then(()=>{if(secOn())secBox(box)});return}
+  if(!data){box.innerHTML='<div class="card"><div class="mut sm">Sem dados de locais de votação para este município.</div></div>';return}
+  const L=data.L,P=pair26(),nm=P?esc(P[0].nm.split(' ')[0]):'Lula',t=S.turn,f=SECM[S.secMode][1];
+  const hasPf=L.some(l=>l[10]);
+  const opts=Object.entries(SECM).filter(([k])=>hasPf||!['sup','bai','jov','ido','fem'].includes(k)).map(([k,v])=>`<option value="${k}"${k===S.secMode?' selected':''}>${v[0]}</option>`).join('');
+  const tot=L.reduce((o,l)=>{for(let i=0;i<8;i++){o.a[i]+=l[8][i];o.p[i]+=l[9][i]}o.el+=l[7];o.s+=l[11].length;return o},{a:[0,0,0,0,0,0,0,0],p:[0,0,0,0,0,0,0,0],el:0,s:0});
+  const ranked=L.map((l,i)=>({l,i,v:f(l,t)})).filter(x=>x.v!=null).sort((x,y)=>y.v-x.v);
+  const row=x=>`<div class="it" data-i="${x.i}" style="cursor:pointer"><span class="pos"></span><span class="nm">${esc(x.l[2])}</span><span class="pc">${SECM[S.secMode][2]==='dif'?pp(x.v)+' p.p.':pc(x.v,1)}</span><div class="vt">${esc(x.l[3]||'')} · ${fmt(x.l[7])} eleitores</div></div>`;
+  let det='';
+  if(S.loc!=null&&L[S.loc]){const l=L[S.loc],o=(t-1)*4;
+    det=`<div class="card"><h3><span>${esc(l[2])}</span><span><button class="xbtn" id="locX">Fechar ✕</button></span></h3>
+     <div class="mut sm">${esc(l[4])}${l[3]?' · '+esc(l[3]):''} · zona ${l[0]} · local ${l[1]}</div>
+     <div class="kv" style="margin-top:10px"><div class="l"><span>${nm} · ${t}º turno 2026</span><b class="num">${pcN(shTw(l[8],t))}</b></div><div class="l"><span>Lula · ${t}º turno 2022</span><b class="num">${pcN(shTw(l[9],t))}</b></div><div class="l"><span>Eleitores</span><b class="num">${fmt(l[7])}</b></div></div>
+     ${l[10]?`<div class="sm mut" style="margin-top:8px;line-height:1.5">Perfil dos eleitores: superior completo ${pc(l[10][1]/l[10][0]*100,1)} · até fundamental incompleto ${pc(l[10][2]/l[10][0]*100,1)} · 16 a 24 anos ${pc(l[10][3]/l[10][0]*100,1)} · 60 anos ou mais ${pc(l[10][4]/l[10][0]*100,1)} · mulheres ${pc(l[10][5]/l[10][0]*100,1)}</div>`:''}
+     <div style="margin-top:12px;overflow:auto;max-height:340px"><table class="sect"><thead><tr><th>Seção</th><th>Eleit.</th><th>${nm} 26</th><th>Lula 22</th><th>Var.</th><th>Br+Nu</th></tr></thead><tbody>${l[11].map(s=>{const L2=secAsLoc(s),a=shTw(L2[8],t),b=shTw(L2[9],t),vv=s[2+o]+s[3+o]+s[4+o]+s[5+o];
+       return `<tr><td>${s[0]}</td><td>${fmt(s[1])}</td><td style="color:${a==null?'inherit':colorOf(a>=50?P[0].sg:P[1].sg)}">${a==null?'-':pc(a,1)}</td><td>${b==null?'-':pc(b,1)}</td><td>${a==null||b==null?'-':pp(a-b)}</td><td>${vv?pc(s[5+o]/vv*100,1):'-'}</td></tr>`}).join('')}</tbody></table></div>
+     <p class="sm mut" style="margin-top:8px;line-height:1.4">2022: votos da seção de mesmo número na mesma zona. Seções novas ou renumeradas aparecem sem comparação.</p></div>`}
+  box.innerHTML=det+`<div class="card"><h3><span>Locais de votação · ${esc(mm?mm.nm:'')}</span><span>${L.length}</span></h3>
+   <select class="ibsel" id="secsel">${opts}</select>
+   <div class="kv" style="margin-top:10px"><div class="l"><span>Locais · seções · eleitores</span><b class="num">${L.length} · ${tot.s} · ${fmt(tot.el)}</b></div><div class="l"><span>${nm} · ${t}º turno 2026</span><b class="num">${pcN(shTw(tot.a,t))}</b></div><div class="l"><span>Lula · ${t}º turno 2022</span><b class="num">${pcN(shTw(tot.p,t))}</b></div></div>
+   ${ranked.length?`<div style="margin-top:12px"><div class="sm mut" style="margin-bottom:6px">Maiores valores · ${SECM[S.secMode][0].toLowerCase()}</div><div class="rk">${ranked.slice(0,5).map(row).join('')}</div></div><div style="margin-top:10px"><div class="sm mut" style="margin-bottom:6px">Menores valores</div><div class="rk">${ranked.slice(-5).reverse().map(row).join('')}</div></div>`:''}
+   <p class="sm mut" style="margin-top:10px;line-height:1.4">Fonte: TSE, dados abertos (votação por seção de 2026 e 2022, locais de votação 2026${hasPf?' e perfil do eleitorado por seção':''}). ${hasPf?'':'Perfil do eleitorado por local disponível, por enquanto, só no Espírito Santo. '}Comparação com 2022 casa as seções pelo número.</p></div>`;
+  const ss=$('secsel');if(ss)ss.onchange=()=>{S.secMode=ss.value;drawLocs();secBox(box)};
+  box.querySelectorAll('.it[data-i]').forEach(e=>e.onclick=()=>{S.loc=+e.dataset.i;drawLocs();secBox(box)});
+  const x=$('locX');if(x)x.onclick=()=>{S.loc=null;drawLocs();secBox(box)};
+}
+
 /* ===== boca de jacaré (v5.7) =====
    Cada leitura do TSE com seções apuradas vira um nó. O TSE publica só o instante atual,
    então o histórico existe apenas enquanto este painel esteve aberto (fica guardado no navegador). */
@@ -1687,7 +1797,7 @@ async function makePng(){
     for(const sp of $('legend').children){const i=sp.querySelector('i'),txt=sp.textContent.trim().replace(/\s+/g,' '),w=g.measureText(txt).width+34;if(x+w>W-40){x=40;y+=32}
       if(i){const col=getComputedStyle(i).backgroundColor;if(col&&col!=='rgba(0, 0, 0, 0)'){g.fillStyle=col;g.fillRect(x,y-14,14,14)}else if(/gradient/.test(getComputedStyle(i).backgroundImage)){const m=getComputedStyle(i).backgroundImage.match(/rgba?\([^)]+\)|#[0-9a-f]{3,6}/i);if(m){g.fillStyle=m[0];g.fillRect(x,y-14,14,14);g.strokeStyle='#05070c';g.lineWidth=2;for(let k=-14;k<14;k+=5){g.beginPath();g.moveTo(x+k,y);g.lineTo(x+k+14,y-14);g.stroke()}}}else if(/245, 185, 66/.test(getComputedStyle(i).boxShadow)){g.strokeStyle='#f5b942';g.lineWidth=2;g.strokeRect(x+1,y-13,12,12)}}
       g.fillStyle='#9aa8c4';g.fillText(txt,x+(i?22:0),y);x+=w+18}
-    g.fillStyle='#5d6b88';g.font='500 17px sans-serif';g.fillText('Desenvolvido por Luciano Victor com apoio de IA (Claude, Anthropic)  ·  v. 7.4  ·  Fonte: TSE e IBGE  ·  '+$('stamp').textContent,40,1372);
+    g.fillStyle='#5d6b88';g.font='500 17px sans-serif';g.fillText('Desenvolvido por Luciano Victor com apoio de IA (Claude, Anthropic)  ·  v. 7.5  ·  Fonte: TSE e IBGE  ·  '+$('stamp').textContent,40,1372);
     const blob=await new Promise(ok=>cv.toBlob(ok,'image/png'));URL.revokeObjectURL(url);return blob;
   }
 }
