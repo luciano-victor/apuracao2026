@@ -1453,15 +1453,19 @@ function scatterIB(M){
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-top:10px" id="ibsc">${g}</svg>`;
 }
 const pp=x=>(x>=0?'+':'')+x.toFixed(1).replace('.',',');
+const TERM={renda:['a renda per capita',1],pob:['o percentual de moradores com até ½ salário mínimo',0],pibpc:['o PIB per capita',0],agro:['o peso da agropecuária',0],indu:['o peso da indústria',0],adm:['o peso do setor público',0],
+  alf:['a taxa de alfabetização',1],urb:['a taxa de urbanização',1],dens:['a densidade demográfica',1],esg:['o percentual com esgoto adequado',0],pop:['a população',1],idmed:['a idade mediana',1],env:['o índice de envelhecimento',0],
+  negra:['o percentual de pretos e pardos',0],branca:['o percentual de brancos',0],evg:['o percentual de evangélicos',0],cat:['o percentual de católicos',0],semrel:['o percentual sem religião',0]};
 function leituraIB(M,nm){
-  const I=IND[S.ind],[,uS,dS]=UNIT(),r=M.r;if(r==null)return '';
+  const k=S.ind,I=IND[k],[,uS]=UNIT(),r=M.r;if(r==null)return '';
+  const [T,fem]=TERM[k]||[I[1].toLowerCase(),0],Tn=T.replace(/^(a|o) /,''),alto=fem?'mais alta':'mais alto',baixo=fem?'mais baixa':'mais baixo';
   const ar=Math.abs(r),forca=ar<.2?'praticamente nenhuma':ar<.4?'fraca':ar<.6?'moderada':ar<.8?'forte':'muito forte';
   let h=`<div class="iblead"><b>Relação ${forca}</b> (correlação de ${r.toFixed(2).replace('.',',')}, numa escala de -1 a 1). `;
-  h+=ar<.2?`Saber ${I[1].toLowerCase()==='população'?'o tamanho da população':'o nível de '+I[1].toLowerCase()} de um lugar quase não ajuda a prever o voto ali.</div>`:
-    `Onde ${I[1].toLowerCase()} é ${r>0?'maior':'menor'}, ${nm} tende a ter fatia maior; onde é ${r>0?'menor':'maior'}, a fatia de ${nm} tende a cair.</div>`;
-  if(M.qhi&&M.qlo&&M.nq>=8){h+=`<div class="iblead">Nos ${M.qhi.n} ${uS} com <b>maior</b> ${I[1].toLowerCase()} (de ${I[4](M.qhi.lo)} a ${I[4](M.qhi.hi)}), ${nm} teve <b>${pc(M.qhi.s,1)}</b> dos votos dos dois principais. Nos ${M.qlo.n} com <b>menor</b> (de ${I[4](M.qlo.lo)} a ${I[4](M.qlo.hi)}), teve <b>${pc(M.qlo.s,1)}</b>. Diferença de ${pp(M.qhi.s-M.qlo.s).replace('+','')} pontos.</div>`}
-  if(M.b1!=null&&ar>=.2){const st=I[8],d=st==='dobrar'?M.b1*Math.log10(2):M.b1*st;
-    h+=`<div class="iblead">Na média, ${st==='dobrar'?'cada vez que '+I[1].toLowerCase()+' dobra':'cada '+(I[4](st).replace(/,0(?=%| )/,''))+' a mais de '+I[1].toLowerCase()}, a fatia de ${nm} ${d>=0?'sobe':'cai'} cerca de ${Math.abs(d).toFixed(1).replace('.',',')} ponto${Math.abs(d)>=1.95?'s':''}.</div>`}
+  h+=ar<.2?`Saber ${T} de um lugar quase não ajuda a prever o voto ali.</div>`:`Onde ${T} é ${alto}, ${nm} tende a ter fatia ${r>0?'maior':'menor'}.</div>`;
+  if(M.qhi&&M.qlo&&M.nq>=8){const d=M.qhi.s-M.qlo.s;
+    h+=`<div class="iblead">Nos ${M.qhi.n} ${uS} em que ${T} é ${alto} (de ${I[4](M.qhi.lo)} a ${I[4](M.qhi.hi)}), ${nm} teve <b>${pc(M.qhi.s,1)}</b> dos votos dos dois principais. Nos ${M.qlo.n} em que é ${baixo} (de ${I[4](M.qlo.lo)} a ${I[4](M.qlo.hi)}), teve <b>${pc(M.qlo.s,1)}</b>: ${Math.abs(d)<1?'praticamente o mesmo':Math.abs(d).toFixed(1).replace('.',',')+' pontos '+(d>0?'a mais':'a menos')+' no grupo de cima'}.</div>`}
+  if(M.b1!=null&&ar>=.2){const st=I[8],d=st==='dobrar'?M.b1*Math.log10(2):M.b1*st,un=k==='idmed'?'anos':k==='env'?'pontos':'pontos percentuais';
+    h+=`<div class="iblead">Na média, ${st==='dobrar'?'cada vez que '+T+' dobra':'cada '+st+' '+un+' a mais em '+Tn}, a fatia de ${nm} ${d>=0?'sobe':'cai'} cerca de ${Math.abs(d).toFixed(1).replace('.',',')} ponto${Math.abs(d)>=1.95?'s':''}.</div>`}
   return h;
 }
 function boxIB(box){
