@@ -222,7 +222,7 @@ header{gap:12px;flex-wrap:nowrap}.brand{white-space:nowrap}.brand small{display:
 <body>
 <div class="app">
 <header>
-  <div class="brand"><b>Apuração</b> 2026 <small>1º turno · 04/10/2026</small></div>
+  <div class="brand"><b id="brandk">Apuração</b> 2026 <small>1º turno · 04/10/2026</small></div>
   <div class="tabs" id="tabs"></div>
   <div class="turns" id="turns"></div>
   <div class="srch"><input id="q" type="search" placeholder="Candidato ou município" autocomplete="off"><div class="qres" id="qres"></div></div>
@@ -239,12 +239,12 @@ header{gap:12px;flex-wrap:nowrap}.brand{white-space:nowrap}.brand small{display:
     <svg id="map" viewBox="0 0 800 800" preserveAspectRatio="xMidYMid meet"></svg>
     <div class="legend" id="legend"></div>
     <div class="layers" id="layers"></div>
-    <div class="acts"><button id="bJac" title="Gráfico de evolução da apuração (boca de jacaré)">Evolução</button><button id="bShare" title="Compartilhar esta visão">Compartilhar</button><button id="bWa" title="Enviar pelo WhatsApp">WhatsApp</button><button id="bPng" title="Baixar o mapa como imagem">PNG</button><button id="bCsv" title="Baixar a tabela desta visão">CSV</button></div>
+    <div class="acts"><button id="bMode" title="Alternar entre a apuração e a análise (comparação com 2022 e indicadores do IBGE)">Análise</button><button id="bJac" title="Gráfico de evolução da apuração (boca de jacaré)">Evolução</button><button id="bShare" title="Compartilhar esta visão">Compartilhar</button><button id="bWa" title="Enviar pelo WhatsApp">WhatsApp</button><button id="bPng" title="Baixar o mapa como imagem">PNG</button><button id="bCsv" title="Baixar a tabela desta visão">CSV</button></div>
     <div class="prog" id="prog"><span id="progtx"></span><div><b id="progbar"></b></div></div>
   </section>
   <section class="col r" id="colR"><div id="layerBox" class="stack"></div><div id="mainBox" class="stack"></div><div id="trendBox" class="stack"></div></section>
 </main>
-<footer><span>Fonte: TSE · resultados.tse.jus.br · malhas: IBGE. Dados em apuração oficial; podem sofrer retificação.</span><span class="cred">Desenvolvido por <b>Luciano Victor</b> com apoio de IA (Claude, Anthropic) · v. 7.1</span><span id="foot"></span><img src="https://hits.sh/luciano-victor.github.io/apuracao2026.svg" alt="" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></footer><!-- contador de acessos (v6.1): uma contagem por abertura da página; estatísticas em https://hits.sh/luciano-victor.github.io/apuracao2026/ -->
+<footer><span>Fonte: TSE · resultados.tse.jus.br · malhas: IBGE. Dados em apuração oficial; podem sofrer retificação.</span><span class="cred">Desenvolvido por <b>Luciano Victor</b> com apoio de IA (Claude, Anthropic) · v. 7.2</span><span id="foot"></span><img src="https://hits.sh/luciano-victor.github.io/apuracao2026.svg" alt="" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></footer><!-- contador de acessos (v6.1): uma contagem por abertura da página; estatísticas em https://hits.sh/luciano-victor.github.io/apuracao2026/ -->
 </div>
 <div class="tip" id="tip"></div>
 
@@ -271,6 +271,7 @@ LAYERS.push(['andamento','Andamento','Percentual de seções apuradas em cada lu
 LAYERS.push(['bolhas','Votos absolutos','Círculos proporcionais à vantagem do líder em número de votos'],['abstvar','Abstenção 1º × 2º','Variação da abstenção entre os dois turnos']);
 LAYERS.push(['virada','Viradas','Onde o líder entre os dois finalistas mudou do 1º para o 2º turno']);
 LAYERS.push(['v22','Desde 2022','Variação em relação ao mesmo turno de 2022, na disputa entre os dois principais candidatos'],['m22','Mudou desde 2022','Onde o vencedor entre os dois principais mudou em relação ao mesmo turno de 2022']);
+LAYERS.push(['ind','Indicadores','Indicadores do IBGE em cada lugar e sua relação com o voto'],['res','Acima do esperado','Diferença entre o voto observado e o previsto pelos indicadores do IBGE']);
 LAYERS.push(['desl','Deslocamento','Mudança do 1º para o 2º turno na disputa entre os finalistas'],['cand','Candidato','Desempenho de um candidato em cada município']);
 
 const $=id=>document.getElementById(id);
@@ -394,6 +395,9 @@ function project(items){
 }
 
 /* ===== estado ===== */
+/* v7.2: o mesmo arquivo serve duas páginas. index.html = apuração; analise.html = análise (2022 e IBGE). */
+const ANALISE=/analise/i.test(location.pathname),AN_ONLY=['v22','m22','ind','res'];
+{const keep=ANALISE?['lider','margem','abst','v22','m22','ind','res','cand']:null;const f=LAYERS.filter(([k])=>ANALISE?keep.includes(k):!AN_ONLY.includes(k));LAYERS.splice(0,LAYERS.length,...f)}
 const S={turn:1,cand:null,hex:false,t2ok:false,cargo:'pres',uf:'br',mun:null,mapCargo:'pres',layer:'lider',tok:0,munList:{},fin:null,elim:[],tr:{}};
 const MAJ=['pres','gov','sen'];
 const isProp=cg=>cg==='df'||cg==='de';
@@ -434,7 +438,8 @@ function go(p){
   if(S.turn===2&&S.layer==='virada'&&S.cargo==='gov'&&govDone(S.uf))S.layer='lider';
   if(S.turn===2&&S.layer==='abstvar'&&S.cargo==='gov'&&govDone(S.uf))S.layer='lider';
   if(S.turn===2&&S.layer==='desl'&&S.cargo==='gov'&&govDone(S.uf))S.layer='lider';
-  if((S.layer==='v22'||S.layer==='m22')&&S.cargo!=='pres')S.layer='lider';
+  if(AN_ONLY.includes(S.layer)&&S.cargo!=='pres')S.layer='lider';
+  if(!LAYERS.some(x=>x[0]===S.layer))S.layer='lider';
   if(S.layer==='cand'&&!S.cand)S.layer='lider';
   if(S.layer==='decisivo'&&isProp(S.cargo))S.layer='lider';
   if(S.uf==='br'&&isProp(S.cargo)&&S.layer!=='cand')S.layer='lider';
@@ -448,7 +453,7 @@ function go(p){
 function fromHash(){
   const m=location.hash.match(/^#\/([a-z]{2})\/(pres|gov|sen|df|de)(?:\/(\d+))?/);
   if(m){S.uf=m[1]==='br'||UFS[m[1]]?m[1]:'br';S.cargo=m[2];S.mun=m[3]||null;S.mapCargo=defMap();
-    const l=location.hash.match(/;l=(\w+)/);if(l&&LAYERS.some(x=>x[0]===l[1])&&l[1]!=='cand'&&l[1]!=='desl'&&l[1]!=='abstvar'&&l[1]!=='virada'&&l[1]!=='v22'&&l[1]!=='m22')S.layer=l[1];
+    const l=location.hash.match(/;l=(\w+)/);if(l&&LAYERS.some(x=>x[0]===l[1])&&l[1]!=='cand'&&l[1]!=='desl'&&l[1]!=='abstvar'&&l[1]!=='virada'&&l[1]!=='v22'&&l[1]!=='m22'&&l[1]!=='ind'&&l[1]!=='res')S.layer=l[1];
     S.wantT2=/;t=2/.test(location.hash)}
 }
 
@@ -462,7 +467,7 @@ async function render(fresh){
   drawLayers();drawTurns();
   const bs=document.querySelector('.brand small');if(bs)bs.textContent=S.turn===2?'2º turno · 25/10/2026':'1º turno · 04/10/2026';
   sel.value=S.uf;markUFs();$('bWorld').classList.toggle('on',S.uf==='zz');
-  {const tt=S.turn===2?'2º turno':'1º turno';document.title='Apuração 2026 · '+tt;const md=document.querySelector('meta[name=description]');if(md)md.content='Painel de apuração 2026 ('+tt+'), com dados do TSE. Desenvolvido por Luciano Victor com apoio de IA (Claude, Anthropic).'}
+  {const tt=S.turn===2?'2º turno':'1º turno';document.title=(ANALISE?'Análise 2026 · ':'Apuração 2026 · ')+tt;const md=document.querySelector('meta[name=description]');if(md)md.content='Painel de apuração 2026 ('+tt+'), com dados do TSE. Desenvolvido por Luciano Victor com apoio de IA (Claude, Anthropic).'}
   const nomeUF=S.uf==='br'?'Brasil':UFS[S.uf][0];
   $('mk').textContent=S.mun?`${nomeUF} · ${munNm(S.mun)}`:nomeUF;
   $('mv').textContent=mapTitle();
@@ -553,6 +558,8 @@ function fillUnit(uf,m){
   if(L==='bolhas')return t1Off(uf)?NEUTRO:'#1a2238';
   if(L==='abstvar'){const r=abstVar(uf,m);if(r==null)return DARK;return r>=0?mix('#ff9f45',clamp(.2+r/6*.8,.2,1)):mix('#7cf2c8',clamp(.2+(-r)/6*.8,.2,1))}
   if(L==='virada'){const v=viradaVal(uf,m);if(!v)return DARK;const c=colorOf(v.sg2);return v.flip?pat(c,mix(c,.3)):mix(c,.24)}
+  if(L==='ind'||L==='res'){const k=ibKey(uf,m),M=S.ibm;if(!M||!M.u[k])return DARK;const u=M.u[k];
+    if(L==='ind')return mix('#38c8e8',clamp(.12+u.q*.88,.12,1));const P=pair26();if(u.res==null||!P)return DARK;return mix(colorOf(u.res>=0?P[0].sg:P[1].sg),clamp(.2+Math.abs(u.res)/8*.8,.2,1))}
   if(L==='v22'){const r=c22(uf,m);if(!r)return DARK;return mix(colorOf(r.d>=0?r.sgA:r.sgB),clamp(.25+Math.abs(r.d)/12*.75,.25,1))}
   if(L==='m22'){const r=c22(uf,m);if(!r)return DARK;const c=colorOf(r.w26);return r.flip?pat(c,mix(c,.3)):mix(c,.24)}
   if(L==='desl'){const r=deslVal(uf,m);if(!r)return DARK;return mix(colorOf(r.d>=0?r.sgA:r.sgB),clamp(.28+Math.abs(r.d)/8*.72,.28,1))}
@@ -566,6 +573,7 @@ function fillUnit(uf,m){
 const t2Outline=()=>!!(S.turn===2&&S.mapCargo==='gov'&&S.uf==='br'&&S.govT2&&['lider','margem','decisivo','abst','bolhas'].includes(S.layer));
 function repaint(){
   if(!curMap)return;
+  if(S.layer==='ind'||S.layer==='res')ibFit();
   if(S.layer==='cand'&&S.cand){let mx=0;for(const u of candUnits())mx=Math.max(mx,u.sh);S.candMax=mx||1}
   if(curMap.nat){const o=t2Outline();for(const uf of UFKEYS){const p=curMap.paths[uf];if(p){p.style.fill=fillUnit(uf,null);p.classList.toggle('t2u',o&&!govDone(uf))}}}
   else for(const m of S.munList[S.uf]||[]){const p=curMap.paths[m.cdi];if(p){p.style.fill=fillUnit(S.uf,m.cd);p.classList.toggle('sel',m.cd===S.mun)}}
@@ -601,6 +609,7 @@ function legend(){
   if(L==='cand'&&S.cand)h=`<span>0%</span><i class="grad" style="background:linear-gradient(90deg,#18213a,${colorOf(S.cand.sg)})"></i><span>${pc(S.candMax||0,1)} (máximo)</span>`;
   else if(L==='desl')h=deslLegend();
   else if(L==='v22'||L==='m22')h=leg22();
+  else if(L==='ind'||L==='res')h=legIB();
   else if(L==='virada'&&S.fin){const U=viradaUnits(),[A,B]=S.fin,n=sg=>U.filter(u=>u.v.flip&&u.v.sg2===sg).length,hz=c=>`<i style="background:repeating-linear-gradient(45deg,${c} 0 3px,${mix(c,.3)} 3px 6px)"></i>`;
     h=`<span>${hz(colorOf(A.sg))}virada para ${esc(A.nm.split(' ')[0])} <span class="num" style="color:var(--tx3)">${n(A.sg)}</span></span><span>${hz(colorOf(B.sg))}virada para ${esc(B.nm.split(' ')[0])} <span class="num" style="color:var(--tx3)">${n(B.sg)}</span></span>`+swt(mix('#9aa8c4',.4),'sem virada (cor do líder, apagada)',U.filter(u=>!u.v.flip).length)}
   else if(L==='bolhas'){const seen=new Map();for(const u of units(S.mapCargo))seen.set(u.l.sg,(seen.get(u.l.sg)||0)+u.l.mv);
@@ -620,6 +629,8 @@ function legend(){
    bolhas:'Tamanho do círculo: vantagem do líder em votos. Número: soma das vantagens de cada partido. Corrige a distorção de área do mapa.',
    abstvar:'Variação da abstenção, em pontos percentuais, do 1º para o 2º turno, considerando as seções já apuradas.',
    virada:'Compara quem estava à frente entre os dois finalistas no 1º turno com quem está à frente no 2º. Durante a apuração, uma virada pode se desfazer.',
+   ind:'Intensidade: posição do lugar no indicador escolhido, do menor para o maior (escala por ordem, para que poucos valores extremos não apaguem o resto).',
+   res:'Diferença, em pontos percentuais, entre o voto observado e o previsto por um modelo com PIB per capita, urbanização, alfabetização e população. Cor: quem teve mais votos do que o perfil do lugar indicaria.',
    v22:'Variação, em pontos percentuais, da fatia de cada candidato entre os dois principais, comparada com o mesmo turno de 2022 (Lula × Bolsonaro). Cor: quem ganhou terreno.',
    m22:'Listrado: o vencedor entre os dois principais mudou em relação ao mesmo turno de 2022. Cor apagada: mesmo lado de 2022.',
    desl:'Variação entre o 1º e o 2º turno na disputa entre os finalistas. Cor: quem ganhou terreno.'}[L]||'';
@@ -629,6 +640,7 @@ function progress(label,done,total){const pr=$('prog'),mp=$('mkp');pr.style.disp
 async function paintScope(tok,fresh){
   const cgs=need();if(S.layer==='sim'||S.layer==='desl'||S.layer==='virada')await ensureFin(S.layer==='sim'?simCg():S.mapCargo);
   if(S.layer==='v22'||S.layer==='m22'){await ensureFin('pres');load22().then(()=>{if(tok===S.tok)repaint()})}
+  if(S.layer==='ind'||S.layer==='res'){await ensureFin('pres');loadIB().then(()=>{if(tok===S.tok)repaint()})}
   const nat=S.uf==='br';
   const items=nat?UFKEYS:(S.munList[S.uf]||[]);
   const turns=(S.layer==='desl'||S.layer==='abstvar'||S.layer==='virada')?[S.turn,1]:[S.turn];
@@ -724,6 +736,7 @@ async function layerBox(){
   if(L==='andamento'){andamentoBox(box);return}
   if(L==='cand'){candBox(box);return}
   if(L==='v22'||L==='m22'){box22(box);return}
+  if(L==='ind'||L==='res'){boxIB(box);return}
   if(L==='desl'){deslBox(box);return}
   if(L==='virada'){viradaBox(box);return}
   if(L==='bolhas'){bolhasBox(box);return}
@@ -787,6 +800,7 @@ function mapTip(e,id){
   else if(L==='abstvar'){const a=leaders[K(S.mapCargo,uf,m,1)],b=leaders[K(S.mapCargo,uf,m,2)];body=!a||!b?'<span class="mut">sem dados dos dois turnos</span>':`<div class="row"><span>1º turno</span><b class="num">${pc(a.abs,1)}</b></div><div class="row"><span>2º turno</span><b class="num">${pc(b.abs,1)}</b></div><div class="mut" style="margin-top:6px">variação ${b.abs-a.abs>=0?'+':''}${(b.abs-a.abs).toFixed(2).replace('.',',')} p.p.</div>`}
   else if(L==='bolhas'){const l=leaders[K(S.mapCargo,uf,m)];body=!l?'<span class="mut">carregando…</span>':`<div class="row"><span>${dot(colorOf(l.sg))}${esc(l.nm)}</span><b class="num">${pc(l.p)}</b></div><div class="mut" style="margin-top:6px">Vantagem: ${fmt(l.mv)} votos${l.second?' sobre '+esc(l.second.nm):''}</div>`}
   else if(L==='virada'){const v=viradaVal(uf,m);body=!v?'<span class="mut">sem dados dos dois turnos</span>':`<div class="row"><span>1º turno</span><b class="num">${esc(v.nm1.split(' ')[0])} · ${pc(v.s1,1)}</b></div><div class="row"><span>2º turno</span><b class="num">${esc(v.nm2.split(' ')[0])} · ${pc(v.s2,1)}</b></div><div class="mut" style="margin-top:6px">${v.flip?'<b style="color:var(--warn)">Virada</b> para '+esc(v.nm2):'Sem virada'}</div>`}
+  else if(L==='ind'||L==='res'){const u=S.ibm&&S.ibm.u[ibKey(uf,m)],I=IND[S.ind],P=pair26();body=!u?`<span class="mut">${IB===false?'indicadores do IBGE indisponíveis':uf==='zz'?'sem indicadores do IBGE no exterior':'carregando…'}</span>`:`<div class="row"><span>${I[1]}</span><b class="num">${I[3](u.x[S.ind])}</b></div>`+(u.y!=null&&P?`<div class="row"><span>${dot(colorOf(P[0].sg))}${esc(P[0].nm.split(' ')[0])}</span><b class="num">${pc(u.y,1)}</b></div>`:'')+(L==='res'&&u.res!=null?`<div class="mut" style="margin-top:6px">esperado ${pc(u.yh,1)} · ${u.res>=0?'+':''}${u.res.toFixed(1).replace('.',',')} p.p.</div>`:'')}
   else if(L==='v22'||L==='m22'){const r=c22(uf,m);body=!r?`<span class="mut">${R22===false?'dados de 2022 indisponíveis':'carregando…'}</span>`:`<div class="row"><span>${dot(colorOf(r.sgA))}${esc(r.nmA.split(' ')[0])} 2026</span><b class="num">${pc(r.s26,1)}</b></div><div class="row mut"><span>Lula 2022</span><span class="num">${pc(r.s22,1)}</span></div><div class="mut" style="margin-top:6px">variação ${r.d>=0?'+':''}${r.d.toFixed(2).replace('.',',')} p.p.${r.flip?' · <b style="color:var(--warn)">mudou de lado</b>':''}</div>`}
   else if(L==='desl'){const r=deslVal(uf,m);body=!r?'<span class="mut">sem dados do 2º turno</span>':`<div class="row"><span>${dot(colorOf(r.sgA))}${esc(r.nmA)}</span><b class="num">${pc(r.s2,1)}</b></div><div class="mut" style="margin-top:6px">1º turno: ${pc(r.s1,1)} · variação ${r.d>=0?'+':''}${r.d.toFixed(2).replace('.',',')} p.p.</div>`}
   else{const l=leaders[K(S.mapCargo,uf,m)];
@@ -965,7 +979,7 @@ function mapTitle0(){
   return `${ln} · ${L==='pxg'?'Presidente × Governador':L==='sim'?CARGOS[simCg()].nome:cargoNome(S.mapCargo,S.uf)}`;
 }
 function drawLayers(){
-  const list=LAYERS.filter(([k])=>!((k==='v22'||k==='m22')&&S.cargo!=='pres')).filter(([k])=>!(S.uf==='zz'&&(k==='pxg'||k==='sim'))&&!(k==='decisivo'&&isProp(S.cargo))).filter(([k])=>k==='cand'?!!S.cand:(k==='desl'||k==='abstvar'||k==='virada')?S.turn===2&&!(S.cargo==='gov'&&govDone(S.uf)):S.turn===2?!['pxg','sim'].includes(k):true);
+  const list=LAYERS.filter(([k])=>!(AN_ONLY.includes(k)&&S.cargo!=='pres')).filter(([k])=>!(S.uf==='zz'&&(k==='pxg'||k==='sim'))&&!(k==='decisivo'&&isProp(S.cargo))).filter(([k])=>k==='cand'?!!S.cand:(k==='desl'||k==='abstvar'||k==='virada')?S.turn===2&&!(S.cargo==='gov'&&govDone(S.uf)):S.turn===2?!['pxg','sim'].includes(k):true);
   const el=$('layers');
   el.innerHTML=list.map(([k,n,t])=>`<button data-k="${k}" class="${k===S.layer?'on':''}" title="${t}">${k==='cand'?esc((S.cand.nm.split(' ')[0]||'Candidato'))+' ✕':n}</button>`).join('');
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>b.dataset.k==='cand'&&S.layer==='cand'?clearCand():go({layer:b.dataset.k}));
@@ -1295,6 +1309,111 @@ function box22(box){
    <p class="sm mut" style="margin-top:10px;line-height:1.4">Compara a fatia de cada lado considerando só os votos dos dois principais candidatos, para que os demais não distorçam a comparação. Fonte de 2022: dados abertos do TSE. Com a apuração em andamento, os números de 2026 ainda mudam.</p></div>`;
 }
 
+
+/* ===== indicadores do IBGE (v7.2) =====
+   Lidos da API de agregados do IBGE (Censo 2022 e PIB dos Municípios 2022), que libera acesso direto do navegador.
+   Três consultas, uma única vez; o resultado tratado fica guardado neste navegador.
+   Por município (código IBGE de 6 dígitos): [população, população urbana, taxa de alfabetização 15+, PIB em R$ mil]. */
+let IB=null,IBP=null;const IBS={};
+const IBURL='https://servicodados.ibge.gov.br/api/v3/agregados/';
+const IND={
+  pibpc:['pibpc','PIB per capita',v=>v[3]*1000/v[0],x=>'R$ '+fmt(Math.round(x)),true],
+  urb:['urb','Urbanização',v=>v[1]/v[0]*100,x=>pc(x,1),false],
+  alf:['alf','Alfabetização',v=>v[2],x=>pc(x,1),false],
+  pop:['pop','População',v=>v[0],x=>fmt(Math.round(x))+' hab.',true]};
+S.ind='pibpc';
+function loadIB(){
+  if(IB)return Promise.resolve();if(IBP)return IBP;
+  try{const c=JSON.parse(localStorage.getItem('ibge22v1')||'null');if(c&&c.m){IB=c.m;return Promise.resolve()}}catch(e){}
+  const g=u=>fetch(IBURL+u).then(r=>{if(!r.ok)throw 0;return r.json()});
+  return IBP=Promise.all([g('9923/periodos/2022/variaveis/93?localidades=N6[all]&classificacao=1[6795,1]'),g('9543/periodos/2022/variaveis/2513?localidades=N6[all]&classificacao=2[6794]|86[95251]|287[100362]'),g('5938/periodos/2022/variaveis/37?localidades=N6[all]')]).then(([p,a,b])=>{
+    const D={},put=(ser,i)=>ser.forEach(r=>{const k=String(r.localidade.id).slice(0,6);(D[k]=D[k]||[0,0,0,0])[i]=+r.serie['2022']||0});
+    const R=p[0].resultados,cat=c=>R.find(r=>Object.keys(r.classificacoes[0].categoria)[0]===c).series;
+    put(cat('6795'),0);put(cat('1'),1);put(a[0].resultados[0].series,2);put(b[0].resultados[0].series,3);
+    IB=D;try{localStorage.setItem('ibge22v1',JSON.stringify({m:D}))}catch(e){}
+  }).catch(()=>{IB=false;IBP=null});
+}
+const ibKey=(uf,m)=>uf+':'+(m||'');
+function ibVal(uf,m){
+  if(!IB||uf==='zz')return null;
+  if(m!=null){const mm=(S.munList[uf]||[]).find(x=>x.cd===m);const v=mm&&IB[String(mm.cdi).slice(0,6)];return v&&v[0]?v:null}
+  if(IBS[uf])return IBS[uf];const pre=UFS[uf]&&UFS[uf][1];if(!pre)return null;
+  const t=[0,0,0,0];for(const k in IB)if(k.startsWith(pre)){const v=IB[k];t[0]+=v[0];t[1]+=v[1];t[2]+=v[2]*v[0];t[3]+=v[3]}
+  if(!t[0])return null;t[2]/=t[0];return IBS[uf]=t;
+}
+function share26(uf,m){
+  const P=pair26(),l=leaders[K('pres',uf,m)];if(!P||!l||!l.all||!l.v)return null;
+  const v=x=>{const e=l.all.find(y=>y.sq===x.sq);return e?e.v:0};const a=v(P[0]),b=v(P[1]);
+  return a+b>0?{y:a/(a+b)*100,w:a+b}:null;
+}
+function solve(A,b){const n=b.length;for(let i=0;i<n;i++){let p=i;for(let r=i+1;r<n;r++)if(Math.abs(A[r][i])>Math.abs(A[p][i]))p=r;[A[i],A[p]]=[A[p],A[i]];[b[i],b[p]]=[b[p],b[i]];if(Math.abs(A[i][i])<1e-12)return null;
+  for(let r=0;r<n;r++){if(r===i)continue;const f=A[r][i]/A[i][i];for(let c=i;c<n;c++)A[r][c]-=f*A[i][c];b[r]-=f*b[i]}}return b.map((x,i)=>x/A[i][i])}
+function wls(X,y,w){const k=X[0].length,A=Array.from({length:k},()=>Array(k).fill(0)),b=Array(k).fill(0);
+  X.forEach((x,i)=>{for(let r=0;r<k;r++){b[r]+=w[i]*x[r]*y[i];for(let c=0;c<k;c++)A[r][c]+=w[i]*x[r]*x[c]}});return solve(A,b)}
+const tx=(I,v)=>I[4]?Math.log10(Math.max(1,v)):v;
+function ibFit(){
+  const M={u:{},n:0};S.ibm=M;if(!IB)return M;
+  const ids=S.uf==='br'?UFKEYS.map(uf=>[uf,null,UFS[uf][0]]):(S.munList[S.uf]||[]).map(m=>[S.uf,m.cd,m.nm]);
+  const keys=Object.keys(IND),rows=[];
+  for(const [uf,m,nome] of ids){const v=ibVal(uf,m);if(!v)continue;const x={};keys.forEach(k=>x[k]=IND[k][2](v));const sh=share26(uf,m);
+    const u=M.u[ibKey(uf,m)]={x,nome,uf,m,y:sh?sh.y:null,w:sh?sh.w:0,res:null};if(sh)rows.push(u)}
+  const all=Object.values(M.u),I=IND[S.ind],srt=all.map(u=>u.x[S.ind]).sort((a,b)=>a-b);
+  all.forEach(u=>{let lo=0,hi=srt.length;const t=u.x[S.ind];while(lo<hi){const md=(lo+hi)>>1;srt[md]<t?lo=md+1:hi=md}u.q=srt.length>1?lo/(srt.length-1):.5});
+  M.n=rows.length;
+  if(rows.length>=8){const X=rows.map(u=>[1,...keys.map(k=>tx(IND[k],u.x[k]))]),y=rows.map(u=>u.y),w=rows.map(u=>u.w),bt=wls(X,y,w);
+    if(bt){let sw=0,my=0;rows.forEach((u,i)=>{sw+=w[i];my+=w[i]*y[i]});my/=sw;let ss=0,sr=0;
+      rows.forEach((u,i)=>{u.yh=X[i].reduce((s,xv,j)=>s+xv*bt[j],0);u.res=u.y-u.yh;ss+=w[i]*(y[i]-my)**2;sr+=w[i]*u.res**2});M.r2=1-sr/ss}}
+  if(rows.length>=3){const xs=rows.map(u=>tx(I,u.x[S.ind])),w=rows.map(u=>u.w);let sw=0,mx=0,my=0;rows.forEach((u,i)=>{sw+=w[i];mx+=w[i]*xs[i];my+=w[i]*u.y});mx/=sw;my/=sw;
+    let sxy=0,sxx=0,syy=0;rows.forEach((u,i)=>{const dx=xs[i]-mx,dy=u.y-my;sxy+=w[i]*dx*dy;sxx+=w[i]*dx*dx;syy+=w[i]*dy*dy});M.r=sxy/Math.sqrt(sxx*syy||1);M.b1=sxy/(sxx||1);M.b0=my-M.b1*mx}
+  return M;
+}
+function legIB(){
+  const M=S.ibm,P=pair26();if(!M||!Object.keys(M.u).length)return '';
+  if(S.layer==='ind')return `<span>menor</span><i class="grad" style="background:linear-gradient(90deg,${mix('#38c8e8',.12)},#38c8e8)"></i><span>maior ${IND[S.ind][1].toLowerCase()}</span>`;
+  if(!P||M.r2==null)return '';const U=Object.values(M.u).filter(u=>u.res!=null),a=U.filter(u=>u.res>=0).length;
+  return swt(colorOf(P[0].sg),esc(P[0].nm.split(' ')[0])+' acima do esperado',a)+swt(colorOf(P[1].sg),esc(P[1].nm.split(' ')[0])+' acima do esperado',U.length-a);
+}
+function scatterIB(M){
+  const I=IND[S.ind],P=pair26(),U=Object.values(M.u).filter(u=>u.y!=null);if(U.length<3||!P)return '';
+  const W=320,H=230,L=40,R=8,T=10,B=34,xs=U.map(u=>tx(I,u.x[S.ind])),ys=U.map(u=>u.y);
+  let x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.floor(Math.min(...ys)/10)*10,y1=Math.ceil(Math.max(...ys)/10)*10;if(x1===x0)x1=x0+1;if(y1===y0)y1=y0+10;
+  const X=v=>L+(v-x0)/(x1-x0)*(W-L-R),Y=v=>T+(1-(v-y0)/(y1-y0))*(H-T-B),wm=Math.max(...U.map(u=>u.w));
+  let g='';for(let v=y0;v<=y1;v+=(y1-y0)>40?20:10)g+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#1f2940"/><text x="${L-5}" y="${Y(v)}" fill="#5d6b88" font-size="9" text-anchor="end" dominant-baseline="central">${v}%</text>`;
+  if(y0<50&&y1>50)g+=`<line x1="${L}" x2="${W-R}" y1="${Y(50)}" y2="${Y(50)}" stroke="#9aa8c4" stroke-dasharray="3 3" stroke-opacity=".5"/>`;
+  const lab=v=>I[4]?I[3](10**v).replace(' hab.',''):I[3](v);
+  [x0,(x0+x1)/2,x1].forEach((v,i)=>g+=`<text x="${X(v)}" y="${H-B+13}" fill="#5d6b88" font-size="9" text-anchor="${['start','middle','end'][i]}">${lab(v)}</text>`);
+  g+=`<text x="${(L+W-R)/2}" y="${H-4}" fill="#7d8aa6" font-size="9.5" text-anchor="middle">${I[1]}${I[4]?' (escala log)':''}</text>`;
+  U.forEach((u,i)=>{const c=colorOf(u.y>=50?P[0].sg:P[1].sg);g+=`<circle cx="${X(xs[i]).toFixed(1)}" cy="${Y(u.y).toFixed(1)}" r="${(1.6+Math.sqrt(u.w/wm)*(S.uf==='br'?9:7)).toFixed(1)}" fill="${c}" fill-opacity=".55" stroke="${c}" stroke-width=".6"${S.uf==='br'?` data-uf="${u.uf}" style="cursor:pointer"`:''}><title>${esc(u.nome)}: ${I[3](u.x[S.ind])} · ${esc(P[0].nm.split(' ')[0])} ${pc(u.y,1)}</title></circle>`});
+  if(M.b1!=null){const a=M.b0+M.b1*x0,b=M.b0+M.b1*x1;g+=`<line x1="${X(x0)}" y1="${Y(a)}" x2="${X(x1)}" y2="${Y(b)}" stroke="#e8edf7" stroke-width="1.4" stroke-dasharray="5 3" stroke-opacity=".8"/>`}
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-top:10px" id="ibsc">${g}</svg>`;
+}
+function boxIB(box){
+  if(IB===false){box.innerHTML='<div class="card"><div class="mut sm">Não foi possível ler a API do IBGE agora. Tente de novo em alguns minutos.</div></div>';return}
+  if(S.uf==='zz'){box.innerHTML='<div class="card"><div class="mut sm">Os indicadores do IBGE cobrem apenas os municípios brasileiros.</div></div>';return}
+  const M=S.ibm,P=pair26();
+  if(!IB||!M||!P){box.innerHTML=`<div class="card"><div class="mut sm">${!P&&S.fin?'A análise usa Lula como referência, e ele não está entre os dois principais deste turno.':'Carregando indicadores do IBGE…'}</div></div>`;return}
+  const I=IND[S.ind],w=unitWord(),U=Object.values(M.u),nm=esc(P[0].nm.split(' ')[0]);
+  const chips=`<div class="presets" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:2px">${Object.values(IND).map(i=>`<button data-i="${i[0]}" class="${i[0]===S.ind?'on':''}" style="${i[0]===S.ind?'border-color:var(--acc);color:var(--acc)':''}">${i[1]}</button>`).join('')}</div>`;
+  let body='';
+  if(S.layer==='ind'){
+    const r=M.r,f=r==null?'':Math.abs(r)<.2?'fraca':Math.abs(r)<.5?'moderada':'forte';
+    body=chips+scatterIB(M)+(r!=null?`<div class="sm" style="margin-top:8px">Correlação ponderada: <b class="num">${r.toFixed(2).replace('.',',')}</b> <span class="mut">(${f}${Math.abs(r)<.2?', sem relação clara':r>=0?', quanto maior o indicador, maior a fatia de '+nm:', quanto maior o indicador, menor a fatia de '+nm})</span></div>`:'')+
+      `<p class="sm mut" style="margin-top:8px;line-height:1.4">Cada ponto é ${S.uf==='br'?'uma UF':'um município'}; o tamanho é proporcional aos votos dos dois principais, e a correlação também usa esse peso. Eixo vertical: fatia de ${nm} entre os dois principais. ${M.n} ${w} com dados.</p>`;
+  }else{
+    const R=U.filter(u=>u.res!=null);
+    if(!R.length){body=`<div class="mut sm">São necessários pelo menos 8 ${w} com votos lidos para estimar o modelo.</div>`}
+    else{const up=[...R].sort((a,b)=>b.res-a.res).slice(0,5),dn=[...R].sort((a,b)=>a.res-b.res).slice(0,5);
+      const row=u=>rowU(u.nome,(u.res>=0?'+':'')+u.res.toFixed(1).replace('.',',')+' p.p.',`observado ${pc(u.y,1)} · esperado ${pc(u.yh,1)}`);
+      body=`<div class="big">${pc(Math.max(0,M.r2)*100,0)}</div><div class="mut sm" style="margin-top:6px">da variação do voto entre ${S.uf==='br'?'as UFs':'os municípios'} é explicada pelos quatro indicadores juntos (R², ${M.n} ${w})</div>
+      <div style="margin-top:14px"><div class="sm mut" style="margin-bottom:6px">${nm} acima do esperado</div>${listRows(up,row)}</div>
+      <div style="margin-top:12px"><div class="sm mut" style="margin-bottom:6px">${nm} abaixo do esperado</div>${listRows(dn,row)}</div>`}
+  }
+  box.innerHTML=`<div class="card"><h3><span>${S.layer==='ind'?'Indicadores × voto':'Acima do esperado'} · ${S.turn}º turno</span><span>${M.n}/${totalUnits()}</span></h3>${body}
+   <p class="sm mut" style="margin-top:10px;line-height:1.4">Fonte: IBGE, Censo 2022 e PIB dos Municípios 2022. São dados por lugar, não por eleitor: "municípios mais ricos votaram em X" não quer dizer que "eleitores ricos votaram em X". Correlação não é causa.</p></div>`;
+  box.querySelectorAll('button[data-i]').forEach(b=>b.onclick=()=>{S.ind=b.dataset.i;repaint()});
+  box.querySelectorAll('#ibsc circle[data-uf]').forEach(c=>c.onclick=()=>go({uf:c.dataset.uf,mun:null}));
+}
+
 /* ===== boca de jacaré (v5.7) =====
    Cada leitura do TSE com seções apuradas vira um nó. O TSE publica só o instante atual,
    então o histórico existe apenas enquanto este painel esteve aberto (fica guardado no navegador). */
@@ -1370,6 +1489,8 @@ function jacClose(){$('jmodal').classList.remove('on')}
 (function(){const m=document.createElement('div');m.id='jmodal';m.innerHTML='<div class="pbox" id="jbody" style="width:min(1040px,95vw)"></div>';document.body.appendChild(m);
   m.addEventListener('click',e=>{if(e.target===m)jacClose()});document.addEventListener('keydown',e=>{if(e.key==='Escape')jacClose()})})();
 $('bJac').onclick=jacOpen;
+if(ANALISE){$('brandk').textContent='Análise';$('bMode').textContent='Apuração';if(!/;l=/.test(location.hash))S.layer='v22'}
+$('bMode').onclick=()=>{const h=location.hash.replace(/;l=(v22|m22|ind|res)/,'');location.href=(ANALISE?'./':'analise.html')+h};
 
 /* ===== série local da apuração ===== */
 const serieKey=()=>'ap26:'+S.turn+'/'+S.uf+'/'+S.cargo+(S.mun||'');
@@ -1454,7 +1575,7 @@ async function makePng(){
     for(const sp of $('legend').children){const i=sp.querySelector('i'),txt=sp.textContent.trim().replace(/\s+/g,' '),w=g.measureText(txt).width+34;if(x+w>W-40){x=40;y+=32}
       if(i){const col=getComputedStyle(i).backgroundColor;if(col&&col!=='rgba(0, 0, 0, 0)'){g.fillStyle=col;g.fillRect(x,y-14,14,14)}else if(/gradient/.test(getComputedStyle(i).backgroundImage)){const m=getComputedStyle(i).backgroundImage.match(/rgba?\([^)]+\)|#[0-9a-f]{3,6}/i);if(m){g.fillStyle=m[0];g.fillRect(x,y-14,14,14);g.strokeStyle='#05070c';g.lineWidth=2;for(let k=-14;k<14;k+=5){g.beginPath();g.moveTo(x+k,y);g.lineTo(x+k+14,y-14);g.stroke()}}}else if(/245, 185, 66/.test(getComputedStyle(i).boxShadow)){g.strokeStyle='#f5b942';g.lineWidth=2;g.strokeRect(x+1,y-13,12,12)}}
       g.fillStyle='#9aa8c4';g.fillText(txt,x+(i?22:0),y);x+=w+18}
-    g.fillStyle='#5d6b88';g.font='500 17px sans-serif';g.fillText('Desenvolvido por Luciano Victor com apoio de IA (Claude, Anthropic)  ·  v. 7.1  ·  Fonte: TSE e IBGE  ·  '+$('stamp').textContent,40,1372);
+    g.fillStyle='#5d6b88';g.font='500 17px sans-serif';g.fillText('Desenvolvido por Luciano Victor com apoio de IA (Claude, Anthropic)  ·  v. 7.2  ·  Fonte: TSE e IBGE  ·  '+$('stamp').textContent,40,1372);
     const blob=await new Promise(ok=>cv.toBlob(ok,'image/png'));URL.revokeObjectURL(url);return blob;
   }
 }
