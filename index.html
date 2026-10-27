@@ -457,7 +457,7 @@ function go(p){
 function fromHash(){
   const m=location.hash.match(/^#\/([a-z]{2})\/(pres|gov|sen|df|de)(?:\/(\d+))?/);
   if(m){S.uf=m[1]==='br'||UFS[m[1]]?m[1]:'br';S.cargo=m[2];S.mun=m[3]||null;S.mapCargo=defMap();
-    const l=location.hash.match(/;l=(\w+)/);if(l&&LAYERS.some(x=>x[0]===l[1])&&l[1]!=='cand'&&l[1]!=='desl'&&l[1]!=='abstvar'&&l[1]!=='virada'&&l[1]!=='v22'&&l[1]!=='m22'&&l[1]!=='ind'&&l[1]!=='res')S.layer=l[1];
+    const l=location.hash.match(/;l=(\w+)/);if(l&&LAYERS.some(x=>x[0]===l[1])&&l[1]!=='cand'&&l[1]!=='desl'&&l[1]!=='abstvar'&&l[1]!=='virada'&&(ANALISE||!AN_ONLY.includes(l[1])))S.layer=l[1];
     S.wantT2=/;t=2/.test(location.hash)}
 }
 
@@ -1598,7 +1598,7 @@ function jacClose(){$('jmodal').classList.remove('on')}
 (function(){const m=document.createElement('div');m.id='jmodal';m.innerHTML='<div class="pbox" id="jbody" style="width:min(1040px,95vw)"></div>';document.body.appendChild(m);
   m.addEventListener('click',e=>{if(e.target===m)jacClose()});document.addEventListener('keydown',e=>{if(e.key==='Escape')jacClose()})})();
 $('bJac').onclick=jacOpen;
-if(ANALISE){$('brandk').textContent='Análise';document.querySelector('.live').style.display='none';if(!/;l=/.test(location.hash))S.layer='ind'}
+if(ANALISE){$('brandk').textContent='Análise';document.querySelector('.live').style.display='none';if(!/;l=(ind|res|v22|m22|lider)/.test(location.hash))S.layer='ind'}
 document.querySelectorAll('#modes a').forEach(a=>{a.classList.toggle('on',(a.dataset.m==='an')===ANALISE);a.onclick=e=>{e.preventDefault();const h=location.hash.replace(/;l=\w+/,'');location.href=(a.dataset.m==='an'?'analise.html':'./')+h}});
 
 /* ===== série local da apuração ===== */
