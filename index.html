@@ -831,7 +831,7 @@ async function drawCards(tok,fresh){
     if(S.uf==='br'&&S.cargo!=='pres'){await cardsNational(tok,fresh);if(tok===S.tok){if(ANALISE){anLeft();return}addPix()}return}
     const d=S.uf==='br'?await getJ(brpres(),fresh):(S.mun?await getMun(S.uf,S.mun,S.cargo,fresh):await getUF(S.uf,S.cargo,fresh));
     if(tok!==S.tok)return;
-    cardsFor(d);if(ANALISE){anLeft();return}addPix();if(!(S.uf==='br'&&S.cargo==='pres'))placeLeft('faltam','');
+    cardsFor(d);if(ANALISE){S.anD=S.cargo==='pres'?d:null;anLeft();return}addPix();if(!(S.uf==='br'&&S.cargo==='pres'))placeLeft('faltam','');
     if(S.uf==='br'&&S.cargo==='pres')getUF('zz','pres',fresh).catch(()=>{});
   }catch(e){
     if(tok!==S.tok)return;
@@ -1509,7 +1509,8 @@ function anLeft(){
     const cmp=[px!=null?`${parN}: ${I[4](px)}`:'',rank(I[0],x)].filter(Boolean).join(' · ');
     rows+=`<div class="ibrow${I[0]===S.ind&&S.layer==='ind'?' on':''}" data-i="${I[0]}" title="${esc(I[6])}"><span class="ibn">${I[1]}</span><span class="ibv num">${I[4](x)}</span>${cmp?`<span class="ibc">${cmp}</span>`:''}</div>`}}
   let res='';const P=pair26();
-  if(P&&uf!=='zz'){const sh=share26(uf,m),r=r22get(uf,m),o=(S.turn-1)*4;
+  if(!P&&S.cargo==='pres'&&!S._finWait){S._finWait=1;ensureFin('pres').then(()=>{S._finWait=0;if(pair26())anLeft()})}
+  if(P&&uf!=='zz'&&S.anD){const cs=cands(S.anD),va=(cs.find(x=>x.sq===P[0].sq)||{}).v||0,vb=(cs.find(x=>x.sq===P[1].sq)||{}).v||0,sh=va+vb>0?{y:va/(va+vb)*100}:null,r=r22get(uf,m),o=(S.turn-1)*4;
     if(sh){res=`<div class="card"><h3><span>Resultado · ${S.turn}º turno</span><span>dois principais</span></h3>
      <div class="kv"><div class="l"><span style="color:${colorOf(P[0].sg)}">${esc(P[0].nm)}</span><b class="num">${pc(sh.y,2)}</b></div><div class="l"><span style="color:${colorOf(P[1].sg)}">${esc(P[1].nm)}</span><b class="num">${pc(100-sh.y,2)}</b></div>
      ${r&&r[o]+r[o+1]>0?`<div class="l"><span class="mut">Lula em 2022 (${S.turn}º turno)</span><b class="num">${pc(r[o]/(r[o]+r[o+1])*100,2)}</b></div>`:''}</div></div>`}}
