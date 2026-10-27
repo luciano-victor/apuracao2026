@@ -248,7 +248,7 @@ header{gap:12px;flex-wrap:nowrap}.brand{white-space:nowrap}.brand small{display:
   </section>
   <section class="col r" id="colR"><div id="layerBox" class="stack"></div><div id="mainBox" class="stack"></div><div id="trendBox" class="stack"></div></section>
 </main>
-<footer><span>Fonte: TSE · resultados.tse.jus.br · malhas: IBGE. Dados em apuração oficial; podem sofrer retificação.</span><span class="cred">Desenvolvido por <b>Luciano Victor</b> com apoio de IA (Claude, Anthropic) · v. 7.3</span><span id="foot"></span><img src="https://hits.sh/luciano-victor.github.io/apuracao2026.svg" alt="" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></footer><!-- contador de acessos (v6.1): uma contagem por abertura da página; estatísticas em https://hits.sh/luciano-victor.github.io/apuracao2026/ -->
+<footer><span>Fonte: TSE · resultados.tse.jus.br · malhas: IBGE. Dados em apuração oficial; podem sofrer retificação.</span><span class="cred">Desenvolvido por <b>Luciano Victor</b> com apoio de IA (Claude, Anthropic) · v. 7.4</span><span id="foot"></span><img src="https://hits.sh/luciano-victor.github.io/apuracao2026.svg" alt="" width="1" height="1" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" aria-hidden="true"></footer><!-- contador de acessos (v6.1): uma contagem por abertura da página; estatísticas em https://hits.sh/luciano-victor.github.io/apuracao2026/ -->
 </div>
 <div class="tip" id="tip"></div>
 
@@ -1321,8 +1321,8 @@ function box22(box){
    já com municípios (N6), UFs (N3) e Brasil (N1); o resultado tratado fica guardado neste navegador.
    Chaves: município = código IBGE de 6 dígitos; UF = 2 dígitos; Brasil = "1". */
 let IB=null,IBP=null,IBN=0;
-const IBURL='https://servicodados.ibge.gov.br/api/v3/agregados/',IBLOC='localidades=N6[all]|N3[all]|N1[all]',IBVER='ibge22v3';
-const IBF=['pop','urbp','alf','pib','vab','agro','indu','adm','branca','preta','parda','cat','evg','semrel','dens','env','idmed','renda','pob','esg'];
+const IBURL='https://servicodados.ibge.gov.br/api/v3/agregados/',IBLOC='localidades=N6[all]|N3[all]|N1[all]',IBVER='ibge22v4';
+const IBF=['pop','urbp','alf','pib','vab','agro','indu','adm','branca','preta','parda','cat','evg','semrel','dens','env','idmed','renda','pob','esg','empf','sal'];
 const IBQ=[
   ['9923/periodos/2022/variaveis/93?classificacao=1[6795,1]',{pop:['93','6795'],urbp:['93','1']}],
   ['9543/periodos/2022/variaveis/2513?classificacao=2[6794]|86[95251]|287[100362]',{alf:['2513']}],
@@ -1334,12 +1334,15 @@ const IBQ=[
   ['9515/periodos/2022/variaveis/10612|10613?',{env:['10612'],idmed:['10613']}],
   ['10295/periodos/2022/variaveis/13431?classificacao=2[6794]|86[95251]|58[95253]',{renda:['13431']}],
   ['10296/periodos/2022/variaveis/1013604?classificacao=2[6794]|86[95251]|386[9681,9682]',{pob:['1013604','9681','9682']}],
-  ['9397/periodos/2022/variaveis/1000382?classificacao=458[72117]|11558[46290]|58[95253]',{esg:['1000382']}]];
+  ['9397/periodos/2022/variaveis/1000382?classificacao=458[72117]|11558[46290]|58[95253]',{esg:['1000382']}],
+  ['9509/periodos/2024/variaveis/708|10143?',{empf:['708'],sal:['10143']}]];
 const pct1=x=>pc(x,1),rs=x=>'R$ '+fmt(Math.round(x));
 /* [chave, nome, grupo, função sobre o registro, formato, escala log, explicação, fonte, passo para a leitura] */
 const IND={};
 [['renda','Renda domiciliar per capita','Economia',v=>v.renda,rs,true,'Rendimento médio mensal por morador, somando o que todos os moradores do domicílio recebem e dividindo pelo número de moradores.','Censo 2022','dobrar'],
  ['pob','Moradores com até ½ salário mínimo','Economia',v=>v.pob,pct1,false,'Percentual de moradores cuja renda domiciliar per capita é de até meio salário mínimo. É a medida de pobreza do Censo mais próxima do público do Bolsa Família.','Censo 2022',10],
+ ['empf','Emprego formal','Economia',v=>v.empf/v.pop*100,x=>x.toFixed(1).replace('.',',')+' por 100 hab.',false,'Pessoas com emprego assalariado em empresas, órgãos públicos e entidades (com carteira ou servidores) para cada 100 moradores. Conta onde fica o local de trabalho: cidades-polo ficam acima, cidades-dormitório abaixo. Feito com o mesmo cadastro que a RAIS alimenta, já agregado por município.','Cadastro Central de Empresas 2024 e Censo 2022',10],
+ ['sal','Salário médio formal','Economia',v=>v.sal,rs,true,'Salário médio mensal dos empregados formais das empresas e organizações do município.','Cadastro Central de Empresas 2024','dobrar'],
  ['pibpc','PIB per capita','Economia',v=>v.pib*1000/v.pop,rs,true,'Riqueza produzida no lugar dividida pela população. Mede a economia, não o bolso das pessoas: cidades com refinaria, usina ou porto têm PIB per capita alto mesmo com população pobre.','PIB dos Municípios 2022','dobrar'],
  ['agro','Peso da agropecuária','Economia',v=>v.agro/v.vab*100,pct1,false,'Participação da agropecuária no valor adicionado da economia local. Indica o quanto a economia depende do campo.','PIB dos Municípios 2021',10],
  ['indu','Peso da indústria','Economia',v=>v.indu/v.vab*100,pct1,false,'Participação da indústria (inclusive extrativa, energia e construção) no valor adicionado da economia local.','PIB dos Municípios 2021',10],
@@ -1453,7 +1456,7 @@ function scatterIB(M){
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;margin-top:10px" id="ibsc">${g}</svg>`;
 }
 const pp=x=>(x>=0?'+':'')+x.toFixed(1).replace('.',',');
-const TERM={renda:['a renda per capita',1],pob:['o percentual de moradores com até ½ salário mínimo',0],pibpc:['o PIB per capita',0],agro:['o peso da agropecuária',0],indu:['o peso da indústria',0],adm:['o peso do setor público',0],
+const TERM={renda:['a renda per capita',1],pob:['o percentual de moradores com até ½ salário mínimo',0],pibpc:['o PIB per capita',0],agro:['o peso da agropecuária',0],empf:['o emprego formal',0],sal:['o salário médio formal',0],indu:['o peso da indústria',0],adm:['o peso do setor público',0],
   alf:['a taxa de alfabetização',1],urb:['a taxa de urbanização',1],dens:['a densidade demográfica',1],esg:['o percentual com esgoto adequado',0],pop:['a população',1],idmed:['a idade mediana',1],env:['o índice de envelhecimento',0],
   negra:['o percentual de pretos e pardos',0],branca:['o percentual de brancos',0],evg:['o percentual de evangélicos',0],cat:['o percentual de católicos',0],semrel:['o percentual sem religião',0]};
 function leituraIB(M,nm){
@@ -1465,7 +1468,7 @@ function leituraIB(M,nm){
   if(M.qhi&&M.qlo&&M.nq>=8){const d=M.qhi.s-M.qlo.s;
     h+=`<div class="iblead">Nos ${M.qhi.n} ${uS} em que ${T} é ${alto} (de ${I[4](M.qhi.lo)} a ${I[4](M.qhi.hi)}), ${nm} teve <b>${pc(M.qhi.s,1)}</b> dos votos dos dois principais. Nos ${M.qlo.n} em que é ${baixo} (de ${I[4](M.qlo.lo)} a ${I[4](M.qlo.hi)}), teve <b>${pc(M.qlo.s,1)}</b>: ${Math.abs(d)<1?'praticamente o mesmo':Math.abs(d).toFixed(1).replace('.',',')+' pontos '+(d>0?'a mais':'a menos')+' no grupo de cima'}.</div>`}
   if(M.b1!=null&&ar>=.2){const st=I[8],d=st==='dobrar'?M.b1*Math.log10(2):M.b1*st,un=k==='idmed'?'anos':k==='env'?'pontos':'pontos percentuais';
-    h+=`<div class="iblead">Na média, ${st==='dobrar'?'cada vez que '+T+' dobra':'cada '+st+' '+un+' a mais em '+Tn}, a fatia de ${nm} ${d>=0?'sobe':'cai'} cerca de ${Math.abs(d).toFixed(1).replace('.',',')} ponto${Math.abs(d)>=1.95?'s':''}.</div>`}
+    h+=`<div class="iblead">Na média, ${st==='dobrar'?'cada vez que '+T+' dobra':k==='empf'?'cada 10 empregos formais a mais por 100 moradores':'cada '+st+' '+un+' a mais em '+Tn}, a fatia de ${nm} ${d>=0?'sobe':'cai'} cerca de ${Math.abs(d).toFixed(1).replace('.',',')} ponto${Math.abs(d)>=1.95?'s':''}.</div>`}
   return h;
 }
 function boxIB(box){
@@ -1518,7 +1521,7 @@ function anLeft(){
     if(sh){res=`<div class="card"><h3><span>Resultado · ${S.turn}º turno</span><span>dois principais</span></h3>
      <div class="kv"><div class="l"><span style="color:${colorOf(P[0].sg)}">${esc(P[0].nm)}</span><b class="num">${pc(sh.y,2)}</b></div><div class="l"><span style="color:${colorOf(P[1].sg)}">${esc(P[1].nm)}</span><b class="num">${pc(100-sh.y,2)}</b></div>
      ${r&&r[o]+r[o+1]>0?`<div class="l"><span class="mut">Lula em 2022 (${S.turn}º turno)</span><b class="num">${pc(r[o]/(r[o]+r[o+1])*100,2)}</b></div>`:''}</div></div>`}}
-  L.innerHTML=res+`<div class="card"><h3><span>Perfil · ${esc(nome)}</span><span>IBGE</span></h3>${rows}<p class="sm mut" style="margin-top:10px;line-height:1.4">Clique num indicador para vê-lo no mapa. Fontes: Censo 2022 e PIB dos Municípios (2022; estrutura da economia, 2021).</p></div>`;
+  L.innerHTML=res+`<div class="card"><h3><span>Perfil · ${esc(nome)}</span><span>IBGE</span></h3>${rows}<p class="sm mut" style="margin-top:10px;line-height:1.4">Clique num indicador para vê-lo no mapa. Fontes: Censo 2022, PIB dos Municípios (2022; estrutura da economia, 2021) e Cadastro Central de Empresas 2024.</p></div>`;
   L.querySelectorAll('.ibrow[data-i]').forEach(e=>e.onclick=()=>{S.ind=e.dataset.i;if(S.layer!=='ind'&&S.cargo==='pres')go({layer:'ind'});else{repaint();anLeft()}});
   addPix();
 }
@@ -1684,7 +1687,7 @@ async function makePng(){
     for(const sp of $('legend').children){const i=sp.querySelector('i'),txt=sp.textContent.trim().replace(/\s+/g,' '),w=g.measureText(txt).width+34;if(x+w>W-40){x=40;y+=32}
       if(i){const col=getComputedStyle(i).backgroundColor;if(col&&col!=='rgba(0, 0, 0, 0)'){g.fillStyle=col;g.fillRect(x,y-14,14,14)}else if(/gradient/.test(getComputedStyle(i).backgroundImage)){const m=getComputedStyle(i).backgroundImage.match(/rgba?\([^)]+\)|#[0-9a-f]{3,6}/i);if(m){g.fillStyle=m[0];g.fillRect(x,y-14,14,14);g.strokeStyle='#05070c';g.lineWidth=2;for(let k=-14;k<14;k+=5){g.beginPath();g.moveTo(x+k,y);g.lineTo(x+k+14,y-14);g.stroke()}}}else if(/245, 185, 66/.test(getComputedStyle(i).boxShadow)){g.strokeStyle='#f5b942';g.lineWidth=2;g.strokeRect(x+1,y-13,12,12)}}
       g.fillStyle='#9aa8c4';g.fillText(txt,x+(i?22:0),y);x+=w+18}
-    g.fillStyle='#5d6b88';g.font='500 17px sans-serif';g.fillText('Desenvolvido por Luciano Victor com apoio de IA (Claude, Anthropic)  ·  v. 7.3  ·  Fonte: TSE e IBGE  ·  '+$('stamp').textContent,40,1372);
+    g.fillStyle='#5d6b88';g.font='500 17px sans-serif';g.fillText('Desenvolvido por Luciano Victor com apoio de IA (Claude, Anthropic)  ·  v. 7.4  ·  Fonte: TSE e IBGE  ·  '+$('stamp').textContent,40,1372);
     const blob=await new Promise(ok=>cv.toBlob(ok,'image/png'));URL.revokeObjectURL(url);return blob;
   }
 }
